@@ -3,6 +3,7 @@
 namespace App\Services\Device;
 
 use App\Contracts\DeviceInterface;
+use App\Models\Device;
 
 /**
  * Mock device for local development and testing.
@@ -11,7 +12,7 @@ use App\Contracts\DeviceInterface;
  */
 class MockDevice implements DeviceInterface
 {
-    public function requestCapture(int $captureId): bool
+    public function requestCapture(Device $device, int $captureId): bool
     {
         return true;
     }

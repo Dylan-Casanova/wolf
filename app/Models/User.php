@@ -23,6 +23,11 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+    public function devices(): HasMany
+    {
+        return $this->hasMany(Device::class);
+    }
+
     public function captures(): HasMany
     {
         return $this->hasMany(DeviceCapture::class);

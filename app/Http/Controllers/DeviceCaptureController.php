@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\CaptureResource;
+use App\Models\Device;
 use App\Models\DeviceCapture;
 use App\Services\Device\CaptureService;
 use Illuminate\Http\Request;
@@ -12,13 +13,27 @@ class DeviceCaptureController extends Controller
     public function __construct(private CaptureService $captureService) {}
 
     /**
-     * Trigger a new capture.
-     * Web (Inertia): redirects back with flash data.
-     * API (React Native / JSON): returns CaptureResource.
+     * Trigger a new capture on a device.
+     * Accepts optional device_id — defaults to user's first device.
      */
     public function store(Request $request)
     {
-        $capture = $this->captureService->trigger($request->user());
+        $user = $request->user();
+
+        // Find the target device
+        $device = $request->device_id
+            ? $user->devices()->where('id', $request->device_id)->firstOrFail()
+            : $user->devices()->first();
+
+        if (! $device) {
+            $message = 'No device registered. Add a device first.';
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $message], 422);
+            }
+            return back()->withErrors(['device' => $message]);
+        }
+
+        $capture = $this->captureService->trigger($user, $device);
 
         if ($request->wantsJson()) {
             return CaptureResource::make($capture);
@@ -29,12 +44,17 @@ class DeviceCaptureController extends Controller
 
     /**
      * Receive the media upload from the ESP32 after it processes the capture command.
-     * The ESP32 calls this endpoint directly with the raw binary payload.
+     * Authenticated by device token in X-Device-Token header.
      */
     public function upload(Request $request, DeviceCapture $capture)
     {
-        // Verify the capture belongs to a valid user and is still pending
         abort_if($capture->status !== 'pending', 409, 'Capture already processed.');
+
+        // Verify device token
+        $token = $request->header('X-Device-Token');
+        if (! $token || ! $capture->device || ! $capture->device->verifyToken($token)) {
+            abort(401, 'Invalid device token.');
+        }
 
         $rawContent  = $request->getContent();
         $contentType = $request->header('Content-Type', 'image/jpeg');

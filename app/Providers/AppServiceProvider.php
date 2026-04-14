@@ -23,7 +23,6 @@ class AppServiceProvider extends ServiceProvider
                 'esp32_mqtt' => new Esp32MqttDevice(
                     host: config('device.mqtt.host'),
                     port: config('device.mqtt.port'),
-                    topic: config('device.mqtt.topic'),
                     username: config('device.mqtt.username'),
                     password: config('device.mqtt.password'),
                 ),
