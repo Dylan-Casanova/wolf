@@ -3,6 +3,19 @@ export interface User {
     name: string;
     email: string;
     email_verified_at?: string;
+    is_admin: boolean;
+}
+
+export interface Device {
+    id: number;
+    user_id: number;
+    name: string;
+    device_id: string;
+    type: string;
+    is_online: boolean;
+    last_seen_at: string | null;
+    meta: Record<string, unknown> | null;
+    user?: User;
 }
 
 export interface CaptureData {
@@ -23,5 +36,6 @@ export type PageProps<
     };
     flash: {
         capture?: CaptureData;
+        device_token?: string;
     };
 };

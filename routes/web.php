@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DeviceCaptureController;
+use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -21,6 +22,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/device/capture', [DeviceCaptureController::class, 'store'])
         ->middleware('throttle:device-capture')
         ->name('device.capture');
+
+    // Admin-only device management
+    Route::middleware('admin')->group(function () {
+        Route::resource('devices', DeviceController::class)->except(['show']);
+        Route::post('/devices/{device}/regenerate-token', [DeviceController::class, 'regenerateToken'])
+            ->name('devices.regenerate-token');
+    });
 });
 
 Route::middleware('auth')->group(function () {

@@ -36,6 +36,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'flash' => [
                 'capture' => $request->session()->get('capture'),
+                'device_token' => $request->session()->get('device_token'),
             ],
         ];
     }
