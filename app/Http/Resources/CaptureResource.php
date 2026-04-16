@@ -22,6 +22,8 @@ class CaptureResource extends JsonResource
             'status'         => $this->status,
             'error_message'  => $this->error_message,
             'captured_at'    => $this->created_at?->toISOString(),
+            'device'         => $this->whenLoaded('device', fn () => ['name' => $this->device->name]),
+            'user'           => $this->whenLoaded('user', fn () => ['name' => $this->user->name, 'email' => $this->user->email]),
         ];
     }
 }
