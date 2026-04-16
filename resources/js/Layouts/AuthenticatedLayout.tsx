@@ -34,6 +34,12 @@ export default function Authenticated({
                                 >
                                     Dashboard
                                 </NavLink>
+                                <NavLink
+                                    href={route('captures.index')}
+                                    active={route().current('captures.*')}
+                                >
+                                    History
+                                </NavLink>
                                 {user.is_admin && (
                                     <NavLink
                                         href={route('devices.index')}
@@ -145,6 +151,12 @@ export default function Authenticated({
                             active={route().current('dashboard')}
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('captures.index')}
+                            active={route().current('captures.*')}
+                        >
+                            History
                         </ResponsiveNavLink>
                         {user.is_admin && (
                             <ResponsiveNavLink

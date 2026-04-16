@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CaptureHistoryController;
 use App\Http\Controllers\DeviceCaptureController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\ProfileController;
@@ -17,6 +18,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
+
+    // Capture history
+    Route::get('/captures', [CaptureHistoryController::class, 'index'])->name('captures.index');
 
     // Inertia capture trigger — returns redirect with flash
     Route::post('/device/capture', [DeviceCaptureController::class, 'store'])
