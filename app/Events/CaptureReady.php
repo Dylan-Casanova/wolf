@@ -15,6 +15,11 @@ class CaptureReady implements ShouldBroadcast
 
     public function __construct(public readonly DeviceCapture $capture) {}
 
+    public function broadcastAs(): string
+    {
+        return 'CaptureReady';
+    }
+
     public function broadcastOn(): array
     {
         return [

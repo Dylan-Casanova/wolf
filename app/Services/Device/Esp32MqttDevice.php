@@ -31,11 +31,15 @@ class Esp32MqttDevice implements DeviceInterface
         try {
             $client = new \PhpMqtt\Client\MqttClient($this->host, $this->port, 'wolf-server-' . uniqid());
 
-            $connectionSettings = (new \PhpMqtt\Client\ConnectionSettings)
-                ->setUsername($this->username)
-                ->setPassword($this->password);
+            $connectionSettings = new \PhpMqtt\Client\ConnectionSettings;
 
-            $client->connect($connectionSettings, cleanSession: true);
+            if ($this->username && $this->username !== 'null') {
+                $connectionSettings = $connectionSettings
+                    ->setUsername($this->username)
+                    ->setPassword($this->password);
+            }
+
+            $client->connect($connectionSettings, true);
 
             $payload = json_encode([
                 'action'     => 'capture',
@@ -61,7 +65,7 @@ class Esp32MqttDevice implements DeviceInterface
     {
         try {
             $client = new \PhpMqtt\Client\MqttClient($this->host, $this->port, 'wolf-ping');
-            $client->connect(cleanSession: true);
+            $client->connect(null, true);
             $client->disconnect();
             return true;
         } catch (\Throwable) {

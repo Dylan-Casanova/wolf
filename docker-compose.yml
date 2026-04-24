@@ -1,0 +1,169 @@
+# =============================================================================
+# Wolf — Docker Compose (Development)
+# =============================================================================
+# Usage:
+#   cp .env.docker .env        # first time only
+#   docker compose up -d       # start all services
+#   docker compose logs -f     # tail all logs
+#   docker compose down        # stop everything
+#
+# One command replaces 4 terminals + brew services.
+# =============================================================================
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # App: PHP-FPM (Laravel)
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    volumes:
+      - .:/var/www
+      - /var/www/vendor  # don't overwrite container vendor with host
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - PHP_IDE_CONFIG=serverName=wolf
+    networks:
+      - wolf
+
+  # ---------------------------------------------------------------------------
+  # Nginx: Web Server
+  # ---------------------------------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - wolf
+
+  # ---------------------------------------------------------------------------
+  # Vite: Frontend Dev Server (HMR)
+  # ---------------------------------------------------------------------------
+  vite:
+    image: node:20-alpine
+    working_dir: /var/www
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/var/www
+      - /var/www/node_modules  # container-local node_modules
+    networks:
+      - wolf
+
+  # ---------------------------------------------------------------------------
+  # Reverb: WebSocket Server
+  # ---------------------------------------------------------------------------
+  reverb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/var/www
+      - /var/www/vendor
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - wolf
+
+  # ---------------------------------------------------------------------------
+  # Queue: Worker (processes broadcast events, jobs)
+  # ---------------------------------------------------------------------------
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    command: php artisan queue:work redis --sleep=3 --tries=3 --max-time=3600 --verbose
+    volumes:
+      - .:/var/www
+      - /var/www/vendor
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - wolf
+
+  # ---------------------------------------------------------------------------
+  # MySQL 8
+  # ---------------------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: wolf
+      MYSQL_USER: wolf
+      MYSQL_PASSWORD: secret
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-psecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - wolf
+
+  # ---------------------------------------------------------------------------
+  # Redis (cache, sessions, queues)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - wolf
+
+  # ---------------------------------------------------------------------------
+  # Mosquitto: MQTT Broker
+  # ---------------------------------------------------------------------------
+  mosquitto:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    networks:
+      - wolf
+
+volumes:
+  mysql_data:
+  redis_data:
+  mosquitto_data:
+  mosquitto_log:
+
+networks:
+  wolf:
+    driver: bridge
