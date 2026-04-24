@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 
 class Device extends Model
@@ -17,6 +18,7 @@ class Device extends Model
         'name',
         'device_id',
         'token_hash',
+        'token_encrypted',
         'type',
         'is_online',
         'last_seen_at',
@@ -29,7 +31,7 @@ class Device extends Model
         'meta'         => 'array',
     ];
 
-    protected $hidden = ['token_hash'];
+    protected $hidden = ['token_hash', 'token_encrypted'];
 
     public function user(): BelongsTo
     {
@@ -56,7 +58,10 @@ class Device extends Model
     public function generateToken(): string
     {
         $token = bin2hex(random_bytes(32));
-        $this->update(['token_hash' => Hash::make($token)]);
+        $this->update([
+            'token_hash'      => Hash::make($token),
+            'token_encrypted' => Crypt::encryptString($token),
+        ]);
         return $token;
     }
 
