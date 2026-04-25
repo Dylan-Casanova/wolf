@@ -16,6 +16,7 @@ services:
   # App: PHP-FPM (Laravel)
   # ---------------------------------------------------------------------------
   app:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
@@ -23,6 +24,7 @@ services:
     volumes:
       - .:/var/www
       - /var/www/vendor  # don't overwrite container vendor with host
+      - storage_data:/var/www/storage/app
     depends_on:
       mysql:
         condition: service_healthy
@@ -30,6 +32,17 @@ services:
         condition: service_healthy
     environment:
       - PHP_IDE_CONFIG=serverName=wolf
+    healthcheck:
+      test: ["CMD", "php", "artisan", "tinker", "--execute", "try { DB::connection()->getPdo(); echo 'ok'; } catch (Exception) { exit(1); }"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - wolf
 
@@ -37,6 +50,7 @@ services:
   # Nginx: Web Server
   # ---------------------------------------------------------------------------
   nginx:
+    restart: unless-stopped
     image: nginx:alpine
     ports:
       - "8000:80"
@@ -44,7 +58,19 @@ services:
       - .:/var/www
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - app
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - wolf
 
@@ -52,6 +78,7 @@ services:
   # Vite: Frontend Dev Server (HMR)
   # ---------------------------------------------------------------------------
   vite:
+    restart: unless-stopped
     image: node:20-alpine
     working_dir: /var/www
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
@@ -60,6 +87,11 @@ services:
     volumes:
       - .:/var/www
       - /var/www/node_modules  # container-local node_modules
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - wolf
 
@@ -67,6 +99,7 @@ services:
   # Reverb: WebSocket Server
   # ---------------------------------------------------------------------------
   reverb:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
@@ -82,6 +115,17 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "sh", "-c", "php -r \"$$c = @fsockopen('127.0.0.1', 8080); if (!$$c) exit(1); fclose($$c);\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - wolf
 
@@ -89,6 +133,7 @@ services:
   # Queue: Worker (processes broadcast events, jobs)
   # ---------------------------------------------------------------------------
   queue:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
@@ -102,6 +147,11 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - wolf
 
@@ -109,6 +159,7 @@ services:
   # MySQL 8
   # ---------------------------------------------------------------------------
   mysql:
+    restart: unless-stopped
     image: mysql:8.0
     ports:
       - "3306:3306"
@@ -124,6 +175,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - wolf
 
@@ -131,6 +187,7 @@ services:
   # Redis (cache, sessions, queues)
   # ---------------------------------------------------------------------------
   redis:
+    restart: unless-stopped
     image: redis:7-alpine
     ports:
       - "6379:6379"
@@ -141,6 +198,11 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - wolf
 
@@ -148,6 +210,7 @@ services:
   # Mosquitto: MQTT Broker
   # ---------------------------------------------------------------------------
   mosquitto:
+    restart: unless-stopped
     image: eclipse-mosquitto:2
     ports:
       - "1883:1883"
@@ -155,6 +218,11 @@ services:
       - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - mosquitto_data:/mosquitto/data
       - mosquitto_log:/mosquitto/log
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - wolf
 
@@ -163,6 +231,7 @@ volumes:
   redis_data:
   mosquitto_data:
   mosquitto_log:
+  storage_data:
 
 networks:
   wolf:
