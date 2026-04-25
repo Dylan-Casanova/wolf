@@ -3,6 +3,7 @@
 use App\Http\Controllers\CaptureHistoryController;
 use App\Http\Controllers\DeviceCaptureController;
 use App\Http\Controllers\DeviceController;
+use App\Http\Controllers\HealthController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -13,6 +14,8 @@ Route::get('/', function () {
         'phpVersion'     => PHP_VERSION,
     ]);
 });
+
+Route::get('/health', HealthController::class)->name('health');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
