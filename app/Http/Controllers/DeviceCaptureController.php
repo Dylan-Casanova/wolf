@@ -30,6 +30,7 @@ class DeviceCaptureController extends Controller
             if ($request->wantsJson()) {
                 return response()->json(['message' => $message], 422);
             }
+
             return back()->withErrors(['device' => $message]);
         }
 
@@ -56,7 +57,7 @@ class DeviceCaptureController extends Controller
             abort(401, 'Invalid device token.');
         }
 
-        $rawContent  = $request->getContent();
+        $rawContent = $request->getContent();
         $contentType = $request->header('Content-Type', 'image/jpeg');
 
         $finalised = $this->captureService->finalise($capture, $rawContent, $contentType);

@@ -19,8 +19,8 @@ class GeoFence extends Model
     ];
 
     protected $casts = [
-        'active'    => 'boolean',
-        'latitude'  => 'float',
+        'active' => 'boolean',
+        'latitude' => 'float',
         'longitude' => 'float',
     ];
 

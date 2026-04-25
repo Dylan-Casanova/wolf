@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 // Authenticated routes (Sanctum — cookie for web, token for React Native)
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', fn(Request $request) => $request->user());
+    Route::get('/user', fn (Request $request) => $request->user());
 
     // Device captures
     Route::post('/device/capture', [DeviceCaptureController::class, 'store'])->middleware('throttle:device-capture');

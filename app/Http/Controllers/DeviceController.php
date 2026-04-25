@@ -52,7 +52,7 @@ class DeviceController extends Controller
 
         $availableUsers = User::where(function ($query) use ($device) {
             $query->whereDoesntHave('devices')
-                  ->orWhere('id', $device->user_id);
+                ->orWhere('id', $device->user_id);
         })
             ->select('id', 'name', 'email')
             ->orderBy('name')
