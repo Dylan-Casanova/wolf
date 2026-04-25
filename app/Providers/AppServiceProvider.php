@@ -26,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
                     username: config('device.mqtt.username'),
                     password: config('device.mqtt.password'),
                 ),
-                default => new MockDevice(),
+                default => new MockDevice,
             };
         });
     }

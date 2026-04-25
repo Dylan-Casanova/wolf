@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Redis;
 use Tests\TestCase;
 
 class HealthCheckTest extends TestCase
@@ -11,6 +12,8 @@ class HealthCheckTest extends TestCase
 
     public function test_health_endpoint_returns_healthy_status(): void
     {
+        Redis::shouldReceive('ping')->once()->andReturn('PONG');
+
         $response = $this->getJson('/health');
 
         $response->assertOk()
@@ -28,6 +31,8 @@ class HealthCheckTest extends TestCase
 
     public function test_health_endpoint_is_accessible_without_auth(): void
     {
+        Redis::shouldReceive('ping')->once()->andReturn('PONG');
+
         $response = $this->getJson('/health');
 
         $response->assertOk();

@@ -26,9 +26,9 @@ class Device extends Model
     ];
 
     protected $casts = [
-        'is_online'    => 'boolean',
+        'is_online' => 'boolean',
         'last_seen_at' => 'datetime',
-        'meta'         => 'array',
+        'meta' => 'array',
     ];
 
     protected $hidden = ['token_hash', 'token_encrypted'];
@@ -59,9 +59,10 @@ class Device extends Model
     {
         $token = bin2hex(random_bytes(32));
         $this->update([
-            'token_hash'      => Hash::make($token),
+            'token_hash' => Hash::make($token),
             'token_encrypted' => Crypt::encryptString($token),
         ]);
+
         return $token;
     }
 
@@ -79,9 +80,9 @@ class Device extends Model
     public function markOnline(array $meta = []): void
     {
         $this->update([
-            'is_online'    => true,
+            'is_online' => true,
             'last_seen_at' => now(),
-            'meta'         => array_merge($this->meta ?? [], $meta),
+            'meta' => array_merge($this->meta ?? [], $meta),
         ]);
     }
 

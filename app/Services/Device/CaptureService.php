@@ -27,18 +27,19 @@ class CaptureService
     public function trigger(User $user, Device $device, string $source = 'manual', ?int $geoFenceId = null): DeviceCapture
     {
         $capture = DeviceCapture::create([
-            'user_id'        => $user->id,
-            'device_id'      => $device->id,
+            'user_id' => $user->id,
+            'device_id' => $device->id,
             'trigger_source' => $source,
-            'geo_fence_id'   => $geoFenceId,
-            'media_type'     => 'image',
-            'status'         => 'pending',
+            'geo_fence_id' => $geoFenceId,
+            'media_type' => 'image',
+            'status' => 'pending',
         ]);
 
         $dispatched = $this->device->requestCapture($device, $capture->id);
 
         if (! $dispatched) {
             $capture->update(['status' => 'failed', 'error_message' => 'Failed to dispatch capture command to device.']);
+
             return $capture;
         }
 
@@ -58,15 +59,15 @@ class CaptureService
     {
         $extension = str_contains($contentType, 'video') ? 'mp4' : 'jpg';
         $mediaType = str_contains($contentType, 'video') ? 'video' : 'image';
-        $filename  = "captures/{$capture->id}.{$extension}";
+        $filename = "captures/{$capture->id}.{$extension}";
 
         Storage::disk('public')->put($filename, $rawContent);
 
         $capture->update([
-            'status'     => 'success',
+            'status' => 'success',
             'media_type' => $mediaType,
             'media_path' => $filename,
-            'media_url'  => Storage::disk('public')->url($filename),
+            'media_url' => Storage::disk('public')->url($filename),
         ]);
 
         broadcast(new CaptureReady($capture->fresh()))->toOthers();

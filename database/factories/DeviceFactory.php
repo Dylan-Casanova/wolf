@@ -18,8 +18,8 @@ class DeviceFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'name' => fake()->words(2, true) . ' cam',
-            'device_id' => 'esp32-' . fake()->unique()->numerify('###'),
+            'name' => fake()->words(2, true).' cam',
+            'device_id' => 'esp32-'.fake()->unique()->numerify('###'),
             'token_hash' => Hash::make('test-device-token'),
             'type' => 'esp32-cam',
             'is_online' => false,

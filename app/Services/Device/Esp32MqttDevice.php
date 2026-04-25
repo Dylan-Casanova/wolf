@@ -5,6 +5,8 @@ namespace App\Services\Device;
 use App\Contracts\DeviceInterface;
 use App\Models\Device;
 use Illuminate\Support\Facades\Log;
+use PhpMqtt\Client\ConnectionSettings;
+use PhpMqtt\Client\MqttClient;
 
 /**
  * ESP32-CAM device driver using MQTT for command dispatch.
@@ -20,8 +22,8 @@ use Illuminate\Support\Facades\Log;
 class Esp32MqttDevice implements DeviceInterface
 {
     public function __construct(
-        private string  $host,
-        private int     $port,
+        private string $host,
+        private int $port,
         private ?string $username,
         private ?string $password,
     ) {}
@@ -29,9 +31,9 @@ class Esp32MqttDevice implements DeviceInterface
     public function requestCapture(Device $device, int $captureId): bool
     {
         try {
-            $client = new \PhpMqtt\Client\MqttClient($this->host, $this->port, 'wolf-server-' . uniqid());
+            $client = new MqttClient($this->host, $this->port, 'wolf-server-'.uniqid());
 
-            $connectionSettings = new \PhpMqtt\Client\ConnectionSettings;
+            $connectionSettings = new ConnectionSettings;
 
             if ($this->username && $this->username !== 'null') {
                 $connectionSettings = $connectionSettings
@@ -42,9 +44,9 @@ class Esp32MqttDevice implements DeviceInterface
             $client->connect($connectionSettings, true);
 
             $payload = json_encode([
-                'action'     => 'capture',
+                'action' => 'capture',
                 'capture_id' => $captureId,
-                'type'       => 'image',
+                'type' => 'image',
             ]);
 
             $client->publish($device->commandTopic(), $payload, qualityOfService: 1);
@@ -53,10 +55,11 @@ class Esp32MqttDevice implements DeviceInterface
             return true;
         } catch (\Throwable $e) {
             Log::error('MQTT capture command failed', [
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
                 'capture_id' => $captureId,
-                'device_id'  => $device->device_id,
+                'device_id' => $device->device_id,
             ]);
+
             return false;
         }
     }
@@ -64,9 +67,10 @@ class Esp32MqttDevice implements DeviceInterface
     public function ping(): bool
     {
         try {
-            $client = new \PhpMqtt\Client\MqttClient($this->host, $this->port, 'wolf-ping');
+            $client = new MqttClient($this->host, $this->port, 'wolf-ping');
             $client->connect(null, true);
             $client->disconnect();
+
             return true;
         } catch (\Throwable) {
             return false;

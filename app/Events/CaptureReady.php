@@ -30,10 +30,10 @@ class CaptureReady implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'id'         => $this->capture->id,
+            'id' => $this->capture->id,
             'media_type' => $this->capture->media_type,
-            'media_url'  => $this->capture->media_url,
-            'status'     => $this->capture->status,
+            'media_url' => $this->capture->media_url,
+            'status' => $this->capture->status,
         ];
     }
 }

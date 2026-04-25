@@ -5,13 +5,14 @@ use App\Http\Controllers\DeviceCaptureController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
-        'laravelVersion' => \Illuminate\Foundation\Application::VERSION,
-        'phpVersion'     => PHP_VERSION,
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
     ]);
 });
 

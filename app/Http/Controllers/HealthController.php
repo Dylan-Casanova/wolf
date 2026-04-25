@@ -15,7 +15,7 @@ class HealthController extends Controller
             'redis' => $this->checkRedis(),
         ];
 
-        $healthy = !in_array(false, $checks, true);
+        $healthy = ! in_array(false, $checks, true);
 
         return response()->json([
             'status' => $healthy ? 'healthy' : 'unhealthy',
@@ -27,6 +27,7 @@ class HealthController extends Controller
     {
         try {
             DB::connection()->getPdo();
+
             return true;
         } catch (\Throwable) {
             return false;
@@ -37,6 +38,7 @@ class HealthController extends Controller
     {
         try {
             Redis::ping();
+
             return true;
         } catch (\Throwable) {
             return false;

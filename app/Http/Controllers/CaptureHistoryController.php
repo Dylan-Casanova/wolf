@@ -24,7 +24,7 @@ class CaptureHistoryController extends Controller
 
         return Inertia::render('Captures/History', [
             'captures' => $captures,
-            'isAdmin'  => $user->is_admin,
+            'isAdmin' => $user->is_admin,
         ]);
     }
 }
