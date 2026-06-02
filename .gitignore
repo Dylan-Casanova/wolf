@@ -3,7 +3,7 @@
 .env
 .env.docker
 .env.backup
-.env.production
+docker/mosquitto/passwd
 .phpactor.json
 .phpunit.result.cache
 /.cursor/

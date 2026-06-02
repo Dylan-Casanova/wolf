@@ -1,0 +1,10 @@
+{$DOMAIN:localhost} {
+    # Web app — proxy to nginx
+    reverse_proxy nginx:80
+
+    # WebSocket — proxy /app/* to Reverb
+    @websocket {
+        path /app/*
+    }
+    reverse_proxy @websocket reverb:8080
+}
