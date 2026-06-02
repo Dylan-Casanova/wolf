@@ -1,0 +1,93 @@
+# =============================================================================
+# Wolf — Docker Compose Production Overrides
+# =============================================================================
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# This file overrides the dev compose with production settings:
+#   - Uses production Dockerfile stage (no Xdebug, optimized autoloader, built assets)
+#   - Removes vite service (assets baked into image)
+#   - Removes exposed ports for MySQL, Redis (internal only)
+#   - Adds Caddy for auto-HTTPS
+#   - Uses production Mosquitto config (auth required)
+# =============================================================================
+
+services:
+
+  # Override app to use production image
+  app:
+    build:
+      target: production
+    volumes:
+      - storage_data:/var/www/storage/app
+    environment:
+      - PHP_IDE_CONFIG=
+
+  # Override nginx — remove host port, Caddy handles public traffic
+  nginx:
+    ports: []
+
+  # Remove vite entirely — assets are built into the production image
+  vite:
+    profiles:
+      - disabled
+
+  # Override reverb — remove host port, Caddy handles WSS
+  reverb:
+    build:
+      target: production
+    ports: []
+    volumes:
+      - storage_data:/var/www/storage/app
+
+  # Override queue to use production image
+  queue:
+    build:
+      target: production
+    volumes:
+      - storage_data:/var/www/storage/app
+
+  # Override MySQL — remove exposed port
+  mysql:
+    ports: []
+
+  # Override Redis — remove exposed port
+  redis:
+    ports: []
+
+  # Override Mosquitto — use production config with auth
+  mosquitto:
+    volumes:
+      - ./docker/mosquitto/mosquitto.prod.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./docker/mosquitto/passwd:/mosquitto/config/passwd:ro
+      - ./docker/mosquitto/acl:/mosquitto/config/acl:ro
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+
+  # ---------------------------------------------------------------------------
+  # Caddy: Reverse Proxy + Auto-HTTPS
+  # ---------------------------------------------------------------------------
+  caddy:
+    restart: unless-stopped
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_certs:/config
+    depends_on:
+      nginx:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - wolf
+
+volumes:
+  caddy_data:
+  caddy_certs:

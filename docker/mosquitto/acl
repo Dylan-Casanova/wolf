@@ -1,0 +1,12 @@
+# Wolf MQTT Access Control
+
+# Server can publish commands and read status for all devices
+user wolf_server
+topic write wolf/+/command
+topic read wolf/+/status
+
+# Device user can read commands and publish status for all devices
+# (Each physical device authenticates as wolf_device)
+user wolf_device
+topic read wolf/+/command
+topic write wolf/+/status
