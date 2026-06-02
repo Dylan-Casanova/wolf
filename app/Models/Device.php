@@ -88,6 +88,9 @@ class Device extends Model
 
     public function markOffline(): void
     {
-        $this->update(['is_online' => false]);
+        $this->update([
+            'is_online' => false,
+            'updated_at' => now(),
+        ]);
     }
 }

@@ -157,6 +157,32 @@ services:
       - wolf
 
   # ---------------------------------------------------------------------------
+  # MQTT Listener: Device Status Subscriber
+  # ---------------------------------------------------------------------------
+  mqtt-listener:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    command: php artisan mqtt:listen
+    volumes:
+      - .:/var/www
+      - /var/www/vendor
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - wolf
+
+  # ---------------------------------------------------------------------------
   # MySQL 8
   # ---------------------------------------------------------------------------
   mysql:
