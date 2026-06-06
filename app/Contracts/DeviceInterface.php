@@ -7,14 +7,17 @@ use App\Models\Device;
 interface DeviceInterface
 {
     /**
-     * Send a capture command to a specific device.
-     * Returns true if the command was dispatched successfully.
-     * The actual media arrives asynchronously via the upload callback.
+     * Send a start_stream command to a device.
      */
-    public function requestCapture(Device $device, int $captureId): bool;
+    public function startStream(Device $device, int $streamId): bool;
 
     /**
-     * Check if a specific device's MQTT broker is reachable.
+     * Send a stop_stream command to a device.
+     */
+    public function stopStream(Device $device): bool;
+
+    /**
+     * Check if the MQTT broker is reachable.
      */
     public function ping(): bool;
 }

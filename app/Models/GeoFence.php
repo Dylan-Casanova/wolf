@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class GeoFence extends Model
 {
@@ -27,11 +26,6 @@ class GeoFence extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function captures(): HasMany
-    {
-        return $this->hasMany(DeviceCapture::class);
     }
 
     /**

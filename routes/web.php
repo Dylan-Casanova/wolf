@@ -1,10 +1,9 @@
 <?php
 
-use App\Http\Controllers\CaptureHistoryController;
-use App\Http\Controllers\DeviceCaptureController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StreamController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -23,14 +22,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-    // Capture history
-    Route::get('/captures', [CaptureHistoryController::class, 'index'])->name('captures.index');
-
-    // Inertia capture trigger — returns redirect with flash
-    Route::post('/device/capture', [DeviceCaptureController::class, 'store'])
-        ->middleware('throttle:device-capture')
-        ->name('device.capture');
-
     // Admin-only device management
     Route::middleware('admin')->group(function () {
         Route::resource('devices', DeviceController::class)->except(['show']);
@@ -40,6 +31,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    // Streaming
+    Route::post('/stream/start', [StreamController::class, 'start']);
+    Route::post('/stream/{stream}/stop', [StreamController::class, 'stop']);
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
