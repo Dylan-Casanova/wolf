@@ -18,32 +18,8 @@ export interface Device {
     user?: User;
 }
 
-export interface CaptureData {
-    id: number;
-    trigger_source: string;
-    media_type: 'image' | 'video';
-    media_url: string | null;
-    status: 'pending' | 'success' | 'failed';
-    error_message: string | null;
-    captured_at: string;
-    device?: { name: string };
-    user?: { name: string; email: string };
-}
-
-export interface PaginatedCaptures {
-    data: CaptureData[];
-    links: {
-        first: string | null;
-        last: string | null;
-        prev: string | null;
-        next: string | null;
-    };
-    meta: {
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-    };
+export interface StreamData {
+    stream_id: number;
 }
 
 export type PageProps<
@@ -53,7 +29,6 @@ export type PageProps<
         user: User;
     };
     flash: {
-        capture?: CaptureData;
         device_token?: string;
     };
 };
