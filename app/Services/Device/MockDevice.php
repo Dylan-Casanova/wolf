@@ -21,4 +21,9 @@ class MockDevice implements DeviceInterface
     {
         return true;
     }
+
+    public function triggerServo(Device $device, int $angle = 130): bool
+    {
+        return true;
+    }
 }

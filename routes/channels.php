@@ -20,3 +20,7 @@ Broadcast::channel('stream.{streamId}', function ($user, $streamId) {
 
     return $stream && (int) $user->id === (int) $stream->user_id;
 });
+
+Broadcast::channel('device.{deviceId}', function ($user, $deviceId) {
+    return $user->devices()->where('id', $deviceId)->exists();
+});

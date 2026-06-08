@@ -1,9 +1,15 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 import axios from 'axios';
 
 type StreamStatus = 'idle' | 'connecting' | 'streaming' | 'ended' | 'error';
 
-export default function StreamView() {
+export interface StreamViewHandle {
+    startStream: () => void;
+    stopStream: () => void;
+    isStreaming: () => boolean;
+}
+
+const StreamView = forwardRef<StreamViewHandle>(function StreamView(_, ref) {
     const [status, setStatus] = useState<StreamStatus>('idle');
     const [streamId, setStreamId] = useState<number | null>(null);
     const [frameSrc, setFrameSrc] = useState<string | null>(null);
@@ -115,6 +121,12 @@ export default function StreamView() {
         };
     }, [stopStream]);
 
+    useImperativeHandle(ref, () => ({
+        startStream,
+        stopStream,
+        isStreaming: () => status === 'streaming',
+    }));
+
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60);
         const s = seconds % 60;
@@ -225,4 +237,6 @@ export default function StreamView() {
             </button>
         </div>
     );
-}
+});
+
+export default StreamView;

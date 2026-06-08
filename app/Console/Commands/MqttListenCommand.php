@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Events\DeviceStatusChanged;
+use App\Events\ServoTriggered;
 use App\Models\Device;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -44,7 +45,33 @@ class MqttListenCommand extends Command
             $this->handleMessage($topic, $message);
         }, qualityOfService: 1);
 
-        $this->info('Subscribed to wolf/+/status and wolf/+/heartbeat. Listening...');
+        $client->subscribe('wolf/+/servo', function (string $topic, string $message) {
+            $this->info("Servo ack on {$topic}: {$message}");
+
+            // Extract device_id from topic: wolf/{deviceId}/servo
+            $parts = explode('/', $topic);
+            $mqttDeviceId = $parts[1] ?? null;
+
+            if (! $mqttDeviceId) {
+                Log::warning('Could not extract device ID from servo topic');
+
+                return;
+            }
+
+            $device = Device::where('device_id', $mqttDeviceId)->first();
+
+            if (! $device) {
+                Log::warning("No device found for servo ack, ID: {$mqttDeviceId}");
+
+                return;
+            }
+
+            broadcast(new ServoTriggered($device->id));
+
+            $this->info("Broadcast ServoTriggered for device {$device->id}");
+        }, qualityOfService: 1);
+
+        $this->info('Subscribed to wolf/+/status, wolf/+/heartbeat, and wolf/+/servo. Listening...');
 
         $client->loop(true);
 
