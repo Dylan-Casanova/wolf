@@ -21,7 +21,7 @@ class GarageControllerTest extends TestCase
         $mock = Mockery::mock(DeviceInterface::class);
         $mock->shouldReceive('triggerServo')
             ->once()
-            ->with(Mockery::on(fn ($d) => $d->id === $device->id))
+            ->with(Mockery::on(fn ($d) => $d->id === $device->id), 130)
             ->andReturn(true);
         $this->app->instance(DeviceInterface::class, $mock);
 
