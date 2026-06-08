@@ -20,4 +20,9 @@ interface DeviceInterface
      * Check if the MQTT broker is reachable.
      */
     public function ping(): bool;
+
+    /**
+     * Send a trigger_servo command to a device.
+     */
+    public function triggerServo(Device $device, int $angle = 130): bool;
 }
