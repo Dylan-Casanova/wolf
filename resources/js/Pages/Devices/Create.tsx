@@ -7,12 +7,15 @@ import { PageProps, User } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
-export default function Create({ users }: PageProps<{ users: Pick<User, 'id' | 'name' | 'email'>[] }>) {
+export default function Create({ users, deviceTypes }: PageProps<{
+    users: Pick<User, 'id' | 'name' | 'email'>[];
+    deviceTypes: { value: string; label: string }[];
+}>) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         device_id: '',
         user_id: '',
-        type: 'esp32-cam',
+        type: 'esp32_cam' as string,
     });
 
     const submit: FormEventHandler = (e) => {
@@ -82,12 +85,19 @@ export default function Create({ users }: PageProps<{ users: Pick<User, 'id' | '
 
                             <div>
                                 <InputLabel htmlFor="type" value="Device Type" />
-                                <TextInput
+                                <select
                                     id="type"
                                     value={data.type}
                                     onChange={(e) => setData('type', e.target.value)}
-                                    className="mt-1 block w-full"
-                                />
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    required
+                                >
+                                    {deviceTypes.map((dt) => (
+                                        <option key={dt.value} value={dt.value}>
+                                            {dt.label}
+                                        </option>
+                                    ))}
+                                </select>
                                 <InputError message={errors.type} className="mt-2" />
                             </div>
 
