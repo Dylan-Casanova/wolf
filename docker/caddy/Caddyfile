@@ -1,10 +1,15 @@
 {$DOMAIN:localhost} {
-    # Web app — proxy to nginx
-    reverse_proxy nginx:80
-
-    # WebSocket — proxy /app/* to Reverb
-    @websocket {
-        path /app/*
+    # WebSocket — proxy /app/* to Reverb (must be before the catch-all)
+    handle /app/* {
+        reverse_proxy reverb:8080
     }
-    reverse_proxy @websocket reverb:8080
+
+    # Laravel app — proxy to internal Nginx
+    handle {
+        reverse_proxy nginx:80
+    }
+
+    log {
+        output stdout
+    }
 }

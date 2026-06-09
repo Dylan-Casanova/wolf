@@ -106,6 +106,9 @@ RUN composer install --no-dev --no-scripts --no-interaction --optimize-autoloade
 # Copy application code
 COPY . .
 
+# Production PHP config (no Xdebug, opcache tuned)
+COPY docker/php/php-prod.ini /usr/local/etc/php/conf.d/99-wolf.ini
+
 # Copy built frontend assets from node stage
 COPY --from=node /var/www/public/build public/build
 

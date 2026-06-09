@@ -2,81 +2,36 @@
 # Wolf — Docker Compose Production Overrides
 # =============================================================================
 # Usage:
-#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 #
 # This file overrides the dev compose with production settings:
 #   - Uses production Dockerfile stage (no Xdebug, optimized autoloader, built assets)
-#   - Removes vite service (assets baked into image)
-#   - Removes exposed ports for MySQL, Redis (internal only)
-#   - Adds Caddy for auto-HTTPS
-#   - Uses production Mosquitto config (auth required)
+#   - Adds Caddy for automatic HTTPS
+#   - Removes Vite dev server
+#   - Uses production PHP config (no Xdebug, opcache tuned)
+#   - MySQL credentials from .env instead of hardcoded 'secret'
+#
+# Note: MySQL (3306), Redis (6379), Nginx (8000), Reverb (8080) port mappings
+# from the base file are blocked by the server firewall (only 22, 80, 443, 1883 open).
 # =============================================================================
 
 services:
 
-  # Override app to use production image
-  app:
-    build:
-      target: production
-    volumes:
-      - storage_data:/var/www/storage/app
-    environment:
-      - PHP_IDE_CONFIG=
-
-  # Override nginx — remove host port, Caddy handles public traffic
-  nginx:
-    ports: []
-
-  # Remove vite entirely — assets are built into the production image
-  vite:
-    profiles:
-      - disabled
-
-  # Override reverb — remove host port, Caddy handles WSS
-  reverb:
-    build:
-      target: production
-    ports: []
-    volumes:
-      - storage_data:/var/www/storage/app
-
-  # Override queue to use production image
-  queue:
-    build:
-      target: production
-    volumes:
-      - storage_data:/var/www/storage/app
-
-  # Override MySQL — remove exposed port
-  mysql:
-    ports: []
-
-  # Override Redis — remove exposed port
-  redis:
-    ports: []
-
-  # Override Mosquitto — use production config with auth
-  mosquitto:
-    volumes:
-      - ./docker/mosquitto/mosquitto.prod.conf:/mosquitto/config/mosquitto.conf:ro
-      - ./docker/mosquitto/passwd:/mosquitto/config/passwd:ro
-      - ./docker/mosquitto/acl:/mosquitto/config/acl:ro
-      - mosquitto_data:/mosquitto/data
-      - mosquitto_log:/mosquitto/log
-
   # ---------------------------------------------------------------------------
-  # Caddy: Reverse Proxy + Auto-HTTPS
+  # Caddy: Reverse Proxy + Automatic HTTPS
   # ---------------------------------------------------------------------------
   caddy:
-    restart: unless-stopped
     image: caddy:2-alpine
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
-      - caddy_certs:/config
+      - caddy_config:/config
+    environment:
+      - DOMAIN=${APP_DOMAIN}
     depends_on:
       nginx:
         condition: service_healthy
@@ -88,6 +43,79 @@ services:
     networks:
       - wolf
 
+  # ---------------------------------------------------------------------------
+  # App: Use production stage + production PHP config
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      target: production
+    volumes:
+      - storage_data:/var/www/storage/app
+      - ./docker/php/php-prod.ini:/usr/local/etc/php/conf.d/99-wolf.ini:ro
+    environment:
+      - PHP_IDE_CONFIG=
+
+  # ---------------------------------------------------------------------------
+  # Nginx: Caddy is the public entry point
+  # ---------------------------------------------------------------------------
+  nginx:
+    ports: []
+
+  # ---------------------------------------------------------------------------
+  # Vite: Disabled in production (assets pre-built in Docker image)
+  # ---------------------------------------------------------------------------
+  vite:
+    profiles:
+      - disabled
+
+  # ---------------------------------------------------------------------------
+  # Reverb: Use production stage + production PHP config
+  # ---------------------------------------------------------------------------
+  reverb:
+    build:
+      target: production
+    ports: []
+    volumes:
+      - storage_data:/var/www/storage/app
+      - ./docker/php/php-prod.ini:/usr/local/etc/php/conf.d/99-wolf.ini:ro
+
+  # ---------------------------------------------------------------------------
+  # Queue: Use production stage + production PHP config
+  # ---------------------------------------------------------------------------
+  queue:
+    build:
+      target: production
+    volumes:
+      - storage_data:/var/www/storage/app
+      - ./docker/php/php-prod.ini:/usr/local/etc/php/conf.d/99-wolf.ini:ro
+
+  # ---------------------------------------------------------------------------
+  # MQTT Listener: Use production stage + production PHP config
+  # ---------------------------------------------------------------------------
+  mqtt-listener:
+    build:
+      target: production
+    volumes:
+      - storage_data:/var/www/storage/app
+      - ./docker/php/php-prod.ini:/usr/local/etc/php/conf.d/99-wolf.ini:ro
+
+  # ---------------------------------------------------------------------------
+  # MySQL: Use .env credentials instead of hardcoded 'secret'
+  # ---------------------------------------------------------------------------
+  mysql:
+    ports: []
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+
+  # ---------------------------------------------------------------------------
+  # Redis: No changes needed
+  # ---------------------------------------------------------------------------
+  redis:
+    ports: []
+
 volumes:
   caddy_data:
-  caddy_certs:
+  caddy_config:
