@@ -4,19 +4,25 @@ import GarageButton from '@/Components/GarageButton';
 import { Head } from '@inertiajs/react';
 import { useRef } from 'react';
 
-export default function Dashboard({ deviceId }: { deviceId: number | null }) {
+interface DashboardProps {
+    deviceId: number | null;
+    deviceType: 'esp32_cam' | 'esp8266' | null;
+}
+
+export default function Dashboard({ deviceId, deviceType }: DashboardProps) {
     const streamRef = useRef<StreamViewHandle>(null);
     const wasStreamingRef = useRef(false);
+    const hasCamera = deviceType === 'esp32_cam';
 
     const handleTriggerStart = () => {
-        if (streamRef.current?.isStreaming()) {
+        if (hasCamera && streamRef.current?.isStreaming()) {
             wasStreamingRef.current = true;
             streamRef.current.stopStream();
         }
     };
 
     const handleTriggerComplete = () => {
-        if (wasStreamingRef.current && streamRef.current) {
+        if (hasCamera && wasStreamingRef.current && streamRef.current) {
             wasStreamingRef.current = false;
             streamRef.current.startStream();
         }
@@ -29,7 +35,7 @@ export default function Dashboard({ deviceId }: { deviceId: number | null }) {
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 flex flex-col items-center gap-4">
-                            <StreamView ref={streamRef} />
+                            {hasCamera && <StreamView ref={streamRef} />}
                             {deviceId && (
                                 <GarageButton
                                     deviceId={deviceId}

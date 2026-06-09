@@ -38,7 +38,7 @@ class DeviceManagementTest extends TestCase
             'name' => 'Front Door Cam',
             'device_id' => 'esp32-001',
             'user_id' => $user->id,
-            'type' => 'esp32-cam',
+            'type' => 'esp32_cam',
         ]);
 
         $response->assertRedirect('/devices');
@@ -60,7 +60,7 @@ class DeviceManagementTest extends TestCase
             'name' => 'Second Cam',
             'device_id' => 'esp32-002',
             'user_id' => $user->id,
-            'type' => 'esp32-cam',
+            'type' => 'esp32_cam',
         ]);
 
         $response->assertSessionHasErrors('user_id');
@@ -76,7 +76,7 @@ class DeviceManagementTest extends TestCase
             'name' => 'Updated Name',
             'device_id' => $device->device_id,
             'user_id' => $user->id,
-            'type' => 'esp32-cam',
+            'type' => 'esp32_cam',
         ]);
 
         $response->assertRedirect('/devices');
@@ -118,7 +118,7 @@ class DeviceManagementTest extends TestCase
             'name' => 'Another Cam',
             'device_id' => 'esp32-001',
             'user_id' => $user2->id,
-            'type' => 'esp32-cam',
+            'type' => 'esp32_cam',
         ]);
 
         $response->assertSessionHasErrors('device_id');

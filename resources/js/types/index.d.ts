@@ -11,7 +11,7 @@ export interface Device {
     user_id: number;
     name: string;
     device_id: string;
-    type: string;
+    type: 'esp32_cam' | 'esp8266';
     is_online: boolean;
     last_seen_at: string | null;
     meta: Record<string, unknown> | null;

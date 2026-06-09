@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DeviceType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,6 +29,7 @@ class Device extends Model
         'is_online' => 'boolean',
         'last_seen_at' => 'datetime',
         'meta' => 'array',
+        'type' => DeviceType::class,
     ];
 
     protected $hidden = ['token_hash', 'token_encrypted'];

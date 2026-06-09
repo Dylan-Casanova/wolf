@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\DeviceType;
 use App\Http\Requests\StoreDeviceRequest;
 use App\Http\Requests\UpdateDeviceRequest;
 use App\Models\Device;
@@ -28,6 +29,7 @@ class DeviceController extends Controller
 
         return Inertia::render('Devices/Create', [
             'users' => $availableUsers,
+            'deviceTypes' => DeviceType::options(),
         ]);
     }
 
@@ -37,7 +39,7 @@ class DeviceController extends Controller
             'name' => $request->name,
             'device_id' => $request->device_id,
             'user_id' => $request->user_id,
-            'type' => $request->type ?? 'esp32-cam',
+            'type' => $request->type,
             'token_hash' => '',
         ]);
 
@@ -61,6 +63,7 @@ class DeviceController extends Controller
         return Inertia::render('Devices/Edit', [
             'device' => $device,
             'users' => $availableUsers,
+            'deviceTypes' => DeviceType::options(),
         ]);
     }
 
@@ -70,7 +73,7 @@ class DeviceController extends Controller
             'name' => $request->name,
             'device_id' => $request->device_id,
             'user_id' => $request->user_id,
-            'type' => $request->type ?? $device->type,
+            'type' => $request->type,
         ]);
 
         return redirect()->route('devices.index');

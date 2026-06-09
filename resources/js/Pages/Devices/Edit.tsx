@@ -14,7 +14,12 @@ import { FormEventHandler, useState } from 'react';
 export default function Edit({
     device,
     users,
-}: PageProps<{ device: Device; users: Pick<User, 'id' | 'name' | 'email'>[] }>) {
+    deviceTypes,
+}: PageProps<{
+    device: Device;
+    users: Pick<User, 'id' | 'name' | 'email'>[];
+    deviceTypes: { value: string; label: string }[];
+}>) {
     const { flash } = usePage<PageProps>().props;
     const [confirmingTokenRegeneration, setConfirmingTokenRegeneration] = useState(false);
 
@@ -22,7 +27,7 @@ export default function Edit({
         name: device.name,
         device_id: device.device_id,
         user_id: String(device.user_id),
-        type: device.type,
+        type: device.type as string,
     });
 
     const { post: regenerate, processing: regenerating } = useForm({});
@@ -105,12 +110,19 @@ export default function Edit({
 
                             <div>
                                 <InputLabel htmlFor="type" value="Device Type" />
-                                <TextInput
+                                <select
                                     id="type"
                                     value={data.type}
                                     onChange={(e) => setData('type', e.target.value)}
-                                    className="mt-1 block w-full"
-                                />
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    required
+                                >
+                                    {deviceTypes.map((dt) => (
+                                        <option key={dt.value} value={dt.value}>
+                                            {dt.label}
+                                        </option>
+                                    ))}
+                                </select>
                                 <InputError message={errors.type} className="mt-2" />
                             </div>
 

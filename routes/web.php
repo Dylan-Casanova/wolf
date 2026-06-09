@@ -24,6 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         return Inertia::render('Dashboard', [
             'deviceId' => $device?->id,
+            'deviceType' => $device?->type?->value,
         ]);
     })->name('dashboard');
 
