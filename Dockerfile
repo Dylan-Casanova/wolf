@@ -115,10 +115,9 @@ COPY --from=node /var/www/public/build public/build
 # Generate optimized autoload
 RUN composer dump-autoload --optimize --no-dev
 
-# Cache routes and views at build time (config:cache is skipped here
-# because .env is not available during build — run it on the server after deploy)
-RUN php artisan route:cache \
-    && php artisan view:cache
+# Note: config:cache, route:cache, and view:cache are NOT run at build time
+# because .env is not available during Docker build. Run them on the server
+# after deploy: docker compose exec app php artisan optimize
 
 # Ensure storage and cache directories are writable
 RUN chown -R www-data:www-data storage bootstrap/cache \
