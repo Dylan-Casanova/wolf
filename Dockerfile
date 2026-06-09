@@ -115,9 +115,9 @@ COPY --from=node /var/www/public/build public/build
 # Generate optimized autoload
 RUN composer dump-autoload --optimize --no-dev
 
-# Laravel optimizations
-RUN php artisan config:cache \
-    && php artisan route:cache \
+# Cache routes and views at build time (config:cache is skipped here
+# because .env is not available during build — run it on the server after deploy)
+RUN php artisan route:cache \
     && php artisan view:cache
 
 # Ensure storage and cache directories are writable
