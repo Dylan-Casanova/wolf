@@ -2,8 +2,11 @@
 
 use App\Providers\AppServiceProvider;
 use App\Providers\TelescopeServiceProvider;
+use Laravel\Telescope\TelescopeApplicationServiceProvider;
 
-return [
+return array_filter([
     AppServiceProvider::class,
-    TelescopeServiceProvider::class,
-];
+    class_exists(TelescopeApplicationServiceProvider::class)
+        ? TelescopeServiceProvider::class
+        : null,
+]);
