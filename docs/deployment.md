@@ -117,6 +117,9 @@ Save and exit (`Ctrl+X`, `Y`, `Enter` in nano).
 ```bash
 cd /opt/wolf
 
+# Build frontend assets
+docker run --rm -v /opt/wolf:/var/www -w /var/www node:20-alpine sh -c "npm ci && npm run build"
+
 # Build and start all services
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
@@ -170,6 +173,7 @@ When you push new code to GitHub:
 ssh root@YOUR_SERVER_IP
 cd /opt/wolf
 git pull
+docker run --rm -v /opt/wolf:/var/www -w /var/www node:20-alpine sh -c "npm ci && npm run build"
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 docker compose exec app php artisan migrate --force  # if there are new migrations
 ```
