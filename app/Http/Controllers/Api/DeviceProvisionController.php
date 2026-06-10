@@ -36,8 +36,8 @@ class DeviceProvisionController extends Controller
         return response()->json([
             'device_id' => $device->device_id,
             'device_token' => Crypt::decryptString($device->token_encrypted),
-            'server_url' => 'http://192.168.1.97:8000',
-            'mqtt_host' => '192.168.1.97',
+            'server_url' => config('app.url'),
+            'mqtt_host' => parse_url(config('app.url'), PHP_URL_HOST),
             'mqtt_port' => '1883',
         ]);
     }
