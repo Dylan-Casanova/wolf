@@ -44,8 +44,6 @@ export default function GarageButton({ deviceId, onTriggerStart, onTriggerComple
         onTriggerStart?.();
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 3000));
-
             await axios.post('/garage/trigger', { angle });
         } catch (error) {
             setState('error');
