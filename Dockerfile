@@ -89,11 +89,17 @@ FROM node:20-alpine AS node
 
 WORKDIR /var/www
 
+ARG VITE_REVERB_APP_KEY
+ARG VITE_REVERB_HOST
+ARG VITE_REVERB_PORT
+ARG VITE_REVERB_SCHEME
+ARG VITE_APP_NAME
+
 COPY package.json package-lock.json* ./
 RUN npm ci
 
 COPY . .
-RUN npm run build
+RUN npx vite build
 
 # ---------------------------------------------------------------------------
 # Stage: production
