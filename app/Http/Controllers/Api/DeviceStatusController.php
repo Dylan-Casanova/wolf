@@ -31,8 +31,13 @@ class DeviceStatusController extends Controller
 
         return response()->json([
             'paired' => true,
-            'mqtt_host' => parse_url(config('app.url'), PHP_URL_HOST),
-            'mqtt_port' => 1883,
+            'mqtt_host' => $this->isLocalDev() ? config('device.localFirmwareIp') : parse_url(config('app.url'), PHP_URL_HOST),
+            'mqtt_port' => $this->isLocalDev() ? 1883 : (int) config('device.mqtt.port', 1883),
         ]);
+    }
+
+    private function isLocalDev(): bool
+    {
+        return config('app.env') === 'local';
     }
 }

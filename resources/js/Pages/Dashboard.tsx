@@ -2,7 +2,7 @@ import GarageButton from '@/Components/GarageButton';
 import StreamView, { StreamViewHandle } from '@/Components/StreamView';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 
 interface DeviceInfo {
     id: number;
@@ -17,22 +17,27 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ devices }: DashboardProps) {
-    const [selectedIndex, setSelectedIndex] = useState(0);
     const streamRef = useRef<StreamViewHandle>(null);
     const wasStreamingRef = useRef(false);
 
-    const device = devices[selectedIndex] ?? null;
-    const hasCamera = device?.type === 'esp32_cam';
+    // Sort: esp32_cam first, esp8266 last
+    const sorted = [...devices].sort((a, b) => {
+        if (a.type === 'esp32_cam' && b.type !== 'esp32_cam') return -1;
+        if (a.type !== 'esp32_cam' && b.type === 'esp32_cam') return 1;
+        return 0;
+    });
+
+    const esp32 = sorted.find((d) => d.type === 'esp32_cam');
 
     const handleTriggerStart = () => {
-        if (hasCamera && streamRef.current?.isStreaming()) {
+        if (esp32 && streamRef.current?.isStreaming()) {
             wasStreamingRef.current = true;
             streamRef.current.stopStream();
         }
     };
 
     const handleTriggerComplete = () => {
-        if (hasCamera && wasStreamingRef.current && streamRef.current) {
+        if (esp32 && wasStreamingRef.current && streamRef.current) {
             wasStreamingRef.current = false;
             streamRef.current.startStream();
         }
@@ -58,33 +63,44 @@ export default function Dashboard({ devices }: DashboardProps) {
                             </div>
                         </div>
                     ) : (
-                        <>
-                            {devices.length > 1 && (
-                                <div className="mb-4">
-                                    <select
-                                        value={selectedIndex}
-                                        onChange={(e) =>
-                                            setSelectedIndex(
-                                                Number(e.target.value),
-                                            )
-                                        }
-                                        className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    >
-                                        {devices.map((d, i) => (
-                                            <option key={d.id} value={i}>
-                                                {d.name} ({d.device_id}){' '}
-                                                {d.is_online ? '' : '— offline'}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
-                            <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                                <div className="flex flex-col items-center gap-4 p-6 text-gray-900">
-                                    {hasCamera && (
-                                        <StreamView ref={streamRef} />
-                                    )}
-                                    {device && (
+                        <div className="flex flex-col gap-6">
+                            {sorted.map((device) => (
+                                <div
+                                    key={device.id}
+                                    className="overflow-hidden bg-white shadow-sm sm:rounded-lg"
+                                >
+                                    <div className="border-b border-gray-100 px-6 py-3">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-sm font-semibold text-gray-700">
+                                                {device.name}
+                                                <span className="ml-2 text-xs font-normal text-gray-400">
+                                                    {device.device_id}
+                                                </span>
+                                            </h3>
+                                            <span
+                                                className={`inline-flex items-center gap-1.5 text-xs font-medium ${
+                                                    device.is_online
+                                                        ? 'text-green-600'
+                                                        : 'text-gray-400'
+                                                }`}
+                                            >
+                                                <span
+                                                    className={`h-2 w-2 rounded-full ${
+                                                        device.is_online
+                                                            ? 'bg-green-500'
+                                                            : 'bg-gray-300'
+                                                    }`}
+                                                />
+                                                {device.is_online
+                                                    ? 'Online'
+                                                    : 'Offline'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col items-center gap-4 p-6 text-gray-900">
+                                        {device.type === 'esp32_cam' && (
+                                            <StreamView ref={streamRef} />
+                                        )}
                                         <GarageButton
                                             deviceId={device.id}
                                             onTriggerStart={handleTriggerStart}
@@ -92,10 +108,10 @@ export default function Dashboard({ devices }: DashboardProps) {
                                                 handleTriggerComplete
                                             }
                                         />
-                                    )}
+                                    </div>
                                 </div>
-                            </div>
-                        </>
+                            ))}
+                        </div>
                     )}
                 </div>
             </div>

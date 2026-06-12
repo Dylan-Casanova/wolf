@@ -24,4 +24,5 @@ return [
         'username' => env('MQTT_USERNAME'),
         'password' => env('MQTT_PASSWORD'),
     ],
+    'localFirmwareIp' => env('LOCAL_FIRMWARE_IP'),
 ];
