@@ -55,7 +55,7 @@ services:
         VITE_REVERB_PORT: ${VITE_REVERB_PORT}
         VITE_REVERB_SCHEME: ${VITE_REVERB_SCHEME}
         VITE_APP_NAME: ${VITE_APP_NAME}
-    volumes: !override
+    volumes:
       - storage_data:/var/www/storage/app
       - ./docker/php/php-prod.ini:/usr/local/etc/php/conf.d/99-wolf.ini:ro
     environment:
@@ -66,8 +66,6 @@ services:
   # ---------------------------------------------------------------------------
   nginx:
     ports: []
-    volumes: !override
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
 
   # ---------------------------------------------------------------------------
   # Vite: Disabled in production (assets pre-built in Docker image)
