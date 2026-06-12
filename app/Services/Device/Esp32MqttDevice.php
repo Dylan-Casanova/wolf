@@ -32,11 +32,10 @@ class Esp32MqttDevice implements DeviceInterface
         ]));
     }
 
-    public function triggerServo(Device $device, int $angle = 130): bool
+    public function triggerServo(Device $device): bool
     {
         return $this->publish($device->commandTopic(), json_encode([
             'action' => 'trigger_servo',
-            'angle' => $angle,
         ]));
     }
 

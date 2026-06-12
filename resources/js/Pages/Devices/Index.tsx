@@ -109,8 +109,8 @@ export default function Index({ devices }: PageProps<{ devices: Device[] }>) {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <span className="text-gray-400">
-                                                        —
+                                                    <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
+                                                        Unclaimed
                                                     </span>
                                                 )}
                                             </td>
@@ -126,10 +126,20 @@ export default function Index({ devices }: PageProps<{ devices: Device[] }>) {
                                                 {device.last_seen_at
                                                     ? new Date(
                                                           device.last_seen_at,
+                                                      ).toLocaleString(
+                                                          'en-US',
+                                                          {
+                                                              timeZone:
+                                                                  'America/Chicago',
+                                                              year: 'numeric',
+                                                              month: '2-digit',
+                                                              day: '2-digit',
+                                                              hour: '2-digit',
+                                                              minute: '2-digit',
+                                                              second: '2-digit',
+                                                              hour12: false,
+                                                          },
                                                       )
-                                                          .toISOString()
-                                                          .slice(0, 19)
-                                                          .replace('T', ' ')
                                                     : 'Never'}
                                             </td>
                                             <td className="whitespace-nowrap px-6 py-4 text-right text-sm">

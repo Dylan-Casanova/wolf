@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\Api\DeviceProvisionController;
+use App\Http\Controllers\Api\DeviceRegisterController;
+use App\Http\Controllers\Api\DeviceStatusController;
 use App\Http\Controllers\GeoFenceController;
 use App\Http\Controllers\StreamFeedController;
 use Illuminate\Http\Request;
@@ -15,9 +16,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('geo-fences/{geoFence}/check', [GeoFenceController::class, 'check']);
 });
 
-// Device provisioning (called by ESP32 during setup — no auth required)
-Route::get('/device/{deviceId}/provision', DeviceProvisionController::class)
-    ->name('device.provision');
+// Device self-registration (called by ESP on first boot — no auth, rate limited)
+Route::post('/device/register', DeviceRegisterController::class)
+    ->middleware('throttle:10,1')
+    ->name('device.register');
+
+// Device status polling (called by ESP every 30s — authenticated by device token)
+Route::get('/device/{deviceId}/status', DeviceStatusController::class)
+    ->name('device.status');
 
 // ESP32 stream feed — authenticated by device token
 Route::post('/device/stream/{stream}/feed', [StreamFeedController::class, 'feed']);

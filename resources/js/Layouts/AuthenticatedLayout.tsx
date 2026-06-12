@@ -34,6 +34,12 @@ export default function Authenticated({
                                 >
                                     Dashboard
                                 </NavLink>
+                                <NavLink
+                                    href={route('devices.claim')}
+                                    active={route().current('devices.claim')}
+                                >
+                                    Claim Device
+                                </NavLink>
                                 {user.is_admin && (
                                     <NavLink
                                         href={route('devices.index')}
@@ -145,6 +151,12 @@ export default function Authenticated({
                             active={route().current('dashboard')}
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('devices.claim')}
+                            active={route().current('devices.claim')}
+                        >
+                            Claim Device
                         </ResponsiveNavLink>
                         {user.is_admin && (
                             <ResponsiveNavLink

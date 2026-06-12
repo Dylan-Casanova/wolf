@@ -22,8 +22,7 @@ class DeviceController extends Controller
 
     public function create()
     {
-        $availableUsers = User::whereDoesntHave('devices')
-            ->select('id', 'name', 'email')
+        $availableUsers = User::select('id', 'name', 'email')
             ->orderBy('name')
             ->get();
 
@@ -38,7 +37,7 @@ class DeviceController extends Controller
         $device = Device::create([
             'name' => $request->name,
             'device_id' => $request->device_id,
-            'user_id' => $request->user_id,
+            'user_id' => $request->user_id ?: null,
             'type' => $request->type,
             'token_hash' => '',
         ]);
@@ -52,11 +51,7 @@ class DeviceController extends Controller
     {
         $device->load('user');
 
-        $availableUsers = User::where(function ($query) use ($device) {
-            $query->whereDoesntHave('devices')
-                ->orWhere('id', $device->user_id);
-        })
-            ->select('id', 'name', 'email')
+        $availableUsers = User::select('id', 'name', 'email')
             ->orderBy('name')
             ->get();
 
@@ -72,7 +67,7 @@ class DeviceController extends Controller
         $device->update([
             'name' => $request->name,
             'device_id' => $request->device_id,
-            'user_id' => $request->user_id,
+            'user_id' => $request->user_id ?: null,
             'type' => $request->type,
         ]);
 

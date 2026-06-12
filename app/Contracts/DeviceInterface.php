@@ -24,5 +24,5 @@ interface DeviceInterface
     /**
      * Send a trigger_servo command to a device.
      */
-    public function triggerServo(Device $device, int $angle = 130): bool;
+    public function triggerServo(Device $device): bool;
 }
