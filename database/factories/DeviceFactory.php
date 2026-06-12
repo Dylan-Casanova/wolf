@@ -43,4 +43,11 @@ class DeviceFactory extends Factory
             'last_seen_at' => now(),
         ]);
     }
+
+    public function unclaimed(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'user_id' => null,
+        ]);
+    }
 }

@@ -1,13 +1,16 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, User } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
-export default function Create({ users, deviceTypes }: PageProps<{
+export default function Create({
+    users,
+    deviceTypes,
+}: PageProps<{
     users: Pick<User, 'id' | 'name' | 'email'>[];
     deviceTypes: { value: string; label: string }[];
 }>) {
@@ -38,57 +41,85 @@ export default function Create({ users, deviceTypes }: PageProps<{
                     <div className="bg-white p-6 shadow-sm sm:rounded-lg">
                         <form onSubmit={submit} className="space-y-6">
                             <div>
-                                <InputLabel htmlFor="name" value="Device Name" />
+                                <InputLabel
+                                    htmlFor="name"
+                                    value="Device Name"
+                                />
                                 <TextInput
                                     id="name"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('name', e.target.value)
+                                    }
                                     className="mt-1 block w-full"
                                     required
                                     isFocused
                                     placeholder="e.g. Front Door Cam"
                                 />
-                                <InputError message={errors.name} className="mt-2" />
+                                <InputError
+                                    message={errors.name}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="device_id" value="Device ID" />
+                                <InputLabel
+                                    htmlFor="device_id"
+                                    value="Device ID"
+                                />
                                 <TextInput
                                     id="device_id"
                                     value={data.device_id}
-                                    onChange={(e) => setData('device_id', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('device_id', e.target.value)
+                                    }
                                     className="mt-1 block w-full"
                                     required
                                     placeholder="e.g. esp32-001"
                                 />
-                                <InputError message={errors.device_id} className="mt-2" />
+                                <InputError
+                                    message={errors.device_id}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="user_id" value="Assign to User" />
+                                <InputLabel
+                                    htmlFor="user_id"
+                                    value="Assign to User"
+                                />
                                 <select
                                     id="user_id"
                                     value={data.user_id}
-                                    onChange={(e) => setData('user_id', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('user_id', e.target.value)
+                                    }
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    required
                                 >
-                                    <option value="">Select a user...</option>
+                                    <option value="">Unclaimed</option>
                                     {users.map((user) => (
                                         <option key={user.id} value={user.id}>
                                             {user.name} ({user.email})
                                         </option>
                                     ))}
                                 </select>
-                                <InputError message={errors.user_id} className="mt-2" />
+                                <InputError
+                                    message={errors.user_id}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="type" value="Device Type" />
+                                <InputLabel
+                                    htmlFor="type"
+                                    value="Device Type"
+                                />
                                 <select
                                     id="type"
                                     value={data.type}
-                                    onChange={(e) => setData('type', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('type', e.target.value)
+                                    }
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     required
                                 >
@@ -98,7 +129,10 @@ export default function Create({ users, deviceTypes }: PageProps<{
                                         </option>
                                     ))}
                                 </select>
-                                <InputError message={errors.type} className="mt-2" />
+                                <InputError
+                                    message={errors.type}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div className="flex items-center justify-end gap-4">

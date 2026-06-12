@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DeviceClaimController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\GarageController;
 use App\Http\Controllers\HealthController;
@@ -20,13 +21,22 @@ Route::get('/health', HealthController::class)->name('health');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
-        $device = auth()->user()->devices()->first();
+        $devices = auth()->user()->devices()->get()->map(fn ($device) => [
+            'id' => $device->id,
+            'name' => $device->name,
+            'device_id' => $device->device_id,
+            'type' => $device->type->value,
+            'is_online' => $device->is_online,
+        ]);
 
         return Inertia::render('Dashboard', [
-            'deviceId' => $device?->id,
-            'deviceType' => $device?->type?->value,
+            'devices' => $devices,
         ]);
     })->name('dashboard');
+
+    // Device claiming (any logged-in user)
+    Route::get('/devices/claim', [DeviceClaimController::class, 'create'])->name('devices.claim');
+    Route::post('/devices/claim', [DeviceClaimController::class, 'store']);
 
     // Admin-only device management
     Route::middleware('admin')->group(function () {

@@ -20,15 +20,8 @@ class UpdateDeviceRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'device_id' => ['required', 'string', 'max:255', "unique:devices,device_id,{$deviceId}"],
-            'user_id' => ['required', 'exists:users,id', "unique:devices,user_id,{$deviceId}"],
+            'user_id' => ['nullable', 'exists:users,id'],
             'type' => ['required', Rule::in(DeviceType::values())],
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'user_id.unique' => 'This user already has a device assigned.',
         ];
     }
 }

@@ -109,9 +109,7 @@ export default function Index({ devices }: PageProps<{ devices: Device[] }>) {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <span className="text-gray-400">
-                                                        —
-                                                    </span>
+                                                    <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">Unclaimed</span>
                                                 )}
                                             </td>
                                             <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">

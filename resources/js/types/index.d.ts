@@ -8,7 +8,7 @@ export interface User {
 
 export interface Device {
     id: number;
-    user_id: number;
+    user_id: number | null;
     name: string;
     device_id: string;
     type: 'esp32_cam' | 'esp8266';

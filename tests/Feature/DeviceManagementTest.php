@@ -50,20 +50,21 @@ class DeviceManagementTest extends TestCase
         ]);
     }
 
-    public function test_cannot_create_device_for_user_who_already_has_one(): void
+    public function test_user_can_have_multiple_devices(): void
     {
         $admin = User::factory()->admin()->create();
         $user = User::factory()->create();
         Device::factory()->create(['user_id' => $user->id]);
 
         $response = $this->actingAs($admin)->post('/devices', [
-            'name' => 'Second Cam',
+            'name' => 'Second Device',
             'device_id' => 'esp32-002',
             'user_id' => $user->id,
             'type' => 'esp32_cam',
         ]);
 
-        $response->assertSessionHasErrors('user_id');
+        $response->assertRedirect('/devices');
+        $this->assertEquals(2, Device::where('user_id', $user->id)->count());
     }
 
     public function test_admin_can_update_device(): void

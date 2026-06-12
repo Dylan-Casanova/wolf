@@ -11,7 +11,6 @@ interface GarageButtonProps {
 
 export default function GarageButton({ deviceId, onTriggerStart, onTriggerComplete }: GarageButtonProps) {
     const [state, setState] = useState<GarageState>('idle');
-    const [angle, setAngle] = useState(130);
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
@@ -44,7 +43,7 @@ export default function GarageButton({ deviceId, onTriggerStart, onTriggerComple
         onTriggerStart?.();
 
         try {
-            await axios.post('/garage/trigger', { angle });
+            await axios.post('/garage/trigger', { device_id: deviceId });
         } catch (error) {
             setState('error');
 
@@ -59,7 +58,7 @@ export default function GarageButton({ deviceId, onTriggerStart, onTriggerComple
             setState('error');
             setTimeout(() => setState('idle'), 3000);
         }, 10000);
-    }, [deviceId, state, angle, onTriggerStart]);
+    }, [deviceId, state, onTriggerStart]);
 
     const label: Record<GarageState, string> = {
         idle: 'Open / Close Garage',
@@ -77,18 +76,6 @@ export default function GarageButton({ deviceId, onTriggerStart, onTriggerComple
 
     return (
         <div className="w-full flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-                <label className="text-sm text-gray-500 whitespace-nowrap">Angle: {angle}°</label>
-                <input
-                    type="range"
-                    min={0}
-                    max={180}
-                    value={angle}
-                    onChange={(e) => setAngle(Number(e.target.value))}
-                    disabled={state === 'triggering'}
-                    className="w-full accent-blue-600"
-                />
-            </div>
             <button
                 onClick={trigger}
                 disabled={state === 'triggering'}

@@ -12,16 +12,20 @@ class GarageController extends Controller
     public function trigger(Request $request)
     {
         $user = $request->user();
-        $device = $user->devices()->first();
+
+        $request->validate([
+            'device_id' => ['sometimes', 'integer'],
+        ]);
+
+        $device = $request->device_id
+            ? $user->devices()->where('id', $request->device_id)->first()
+            : $user->devices()->first();
 
         if (! $device) {
             return response()->json(['message' => 'No device registered.'], 422);
         }
 
-        $angle = $request->integer('angle', 130);
-        $angle = max(0, min(180, $angle));
-
-        $this->device->triggerServo($device, $angle);
+        $this->device->triggerServo($device);
 
         return response()->json(['message' => 'Command sent.']);
     }

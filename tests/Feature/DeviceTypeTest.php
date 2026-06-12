@@ -73,7 +73,7 @@ class DeviceTypeTest extends TestCase
         $this->assertDatabaseHas('devices', ['device_id' => 'test-001', 'type' => 'esp8266']);
     }
 
-    public function test_dashboard_passes_device_type(): void
+    public function test_dashboard_passes_devices_with_type(): void
     {
         $user = User::factory()->create();
         Device::factory()->esp8266()->create(['user_id' => $user->id]);
@@ -82,12 +82,12 @@ class DeviceTypeTest extends TestCase
 
         $response->assertInertia(fn ($page) => $page
             ->component('Dashboard')
-            ->has('deviceType')
-            ->where('deviceType', 'esp8266')
+            ->has('devices', 1)
+            ->where('devices.0.type', 'esp8266')
         );
     }
 
-    public function test_dashboard_passes_null_device_type_without_device(): void
+    public function test_dashboard_passes_empty_devices_without_device(): void
     {
         $user = User::factory()->create();
 
@@ -95,7 +95,7 @@ class DeviceTypeTest extends TestCase
 
         $response->assertInertia(fn ($page) => $page
             ->component('Dashboard')
-            ->where('deviceType', null)
+            ->has('devices', 0)
         );
     }
 }
