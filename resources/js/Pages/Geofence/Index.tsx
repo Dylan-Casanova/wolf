@@ -36,12 +36,11 @@ export default function Index({ geofence }: GeofencePageProps) {
         router.reload();
     }, []);
 
-    const { tracking, position, startTracking, stopTracking, error } =
-        useGeolocation({
-            geofenceId: geofence?.id ?? 0,
-            isActive: geofence?.is_active ?? false,
-            onTriggered: handleTriggered,
-        });
+    const { tracking, position, error } = useGeolocation({
+        geofenceId: geofence?.id ?? 0,
+        isActive: geofence?.is_active ?? false,
+        onTriggered: handleTriggered,
+    });
 
     const handleAddressSelect = (lat: number, lng: number) => {
         setCenter([lat, lng]);
@@ -119,14 +118,10 @@ export default function Index({ geofence }: GeofencePageProps) {
                                             {geofence && (
                                                 <GeofenceToggle
                                                     geofenceId={geofence.id}
-                                                    initialActive={
-                                                        geofence.is_active
+                                                    isActive={geofence.is_active}
+                                                    onToggled={() =>
+                                                        router.reload()
                                                     }
-                                                    onToggle={(active) => {
-                                                        if (active)
-                                                            startTracking();
-                                                        else stopTracking();
-                                                    }}
                                                 />
                                             )}
                                             {tracking && (

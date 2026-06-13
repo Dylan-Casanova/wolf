@@ -3,16 +3,15 @@ import { useState } from 'react';
 
 interface GeofenceToggleProps {
     geofenceId: number;
-    initialActive: boolean;
-    onToggle?: (isActive: boolean) => void;
+    isActive: boolean;
+    onToggled?: (isActive: boolean) => void;
 }
 
 export default function GeofenceToggle({
     geofenceId,
-    initialActive,
-    onToggle,
+    isActive,
+    onToggled,
 }: GeofenceToggleProps) {
-    const [isActive, setIsActive] = useState(initialActive);
     const [loading, setLoading] = useState(false);
     const [locationError, setLocationError] = useState<string | null>(null);
 
@@ -70,9 +69,7 @@ export default function GeofenceToggle({
             const response = await axios.post(
                 `/geo-fences/${geofenceId}/toggle`,
             );
-            const newState = response.data.is_active;
-            setIsActive(newState);
-            onToggle?.(newState);
+            onToggled?.(response.data.is_active);
         } catch {
             // revert on failure
         } finally {
