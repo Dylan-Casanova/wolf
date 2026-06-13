@@ -36,21 +36,27 @@ function UserMarker({ position }: { position: [number, number] }) {
     const markerRef = useRef<L.CircleMarker | null>(null);
 
     useEffect(() => {
-        if (markerRef.current) map.removeLayer(markerRef.current);
-
-        markerRef.current = L.circleMarker(position, {
-            radius: 8,
-            color: '#3b82f6',
-            fillColor: '#3b82f6',
-            fillOpacity: 0.9,
-            weight: 3,
-            className: 'animate-pulse',
-        }).addTo(map);
-
-        return () => {
-            if (markerRef.current) map.removeLayer(markerRef.current);
-        };
+        if (markerRef.current) {
+            markerRef.current.setLatLng(position);
+        } else {
+            markerRef.current = L.circleMarker(position, {
+                radius: 8,
+                color: '#3b82f6',
+                fillColor: '#3b82f6',
+                fillOpacity: 0.9,
+                weight: 3,
+            }).addTo(map);
+        }
     }, [position, map]);
+
+    useEffect(() => {
+        return () => {
+            if (markerRef.current) {
+                map.removeLayer(markerRef.current);
+                markerRef.current = null;
+            }
+        };
+    }, [map]);
 
     return null;
 }
