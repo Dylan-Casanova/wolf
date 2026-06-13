@@ -135,7 +135,7 @@ function EditableRectangle({
             }
         });
 
-        const b = L.latLngBounds(bounds);
+        const b = L.latLngBounds(bounds as L.LatLngExpression[]);
         reportBounds(b);
 
         const corners: [string, L.LatLngExpression][] = [
