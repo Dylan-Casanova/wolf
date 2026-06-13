@@ -40,6 +40,12 @@ export default function Authenticated({
                                 >
                                     Claim Device
                                 </NavLink>
+                                <NavLink
+                                    href={route('geofence')}
+                                    active={route().current('geofence')}
+                                >
+                                    Geofence
+                                </NavLink>
                                 {user.is_admin && (
                                     <NavLink
                                         href={route('devices.index')}
@@ -157,6 +163,12 @@ export default function Authenticated({
                             active={route().current('devices.claim')}
                         >
                             Claim Device
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('geofence')}
+                            active={route().current('geofence')}
+                        >
+                            Geofence
                         </ResponsiveNavLink>
                         {user.is_admin && (
                             <ResponsiveNavLink

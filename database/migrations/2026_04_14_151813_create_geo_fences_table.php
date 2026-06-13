@@ -6,27 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('geo_fences', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('name');
-            $table->decimal('latitude', 10, 7);
-            $table->decimal('longitude', 10, 7);
-            $table->unsignedInteger('radius_meters')->default(100);
-            $table->enum('trigger_on', ['enter', 'exit', 'both'])->default('both');
-            $table->boolean('active')->default(true);
+            $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
+            $table->decimal('north_lat', 10, 7);
+            $table->decimal('south_lat', 10, 7);
+            $table->decimal('east_lng', 10, 7);
+            $table->decimal('west_lng', 10, 7);
+            $table->boolean('is_active')->default(false);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('geo_fences');

@@ -3,6 +3,7 @@
 use App\Http\Controllers\DeviceClaimController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\GarageController;
+use App\Http\Controllers\GeoFenceController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StreamController;
@@ -21,7 +22,8 @@ Route::get('/health', HealthController::class)->name('health');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
-        $devices = auth()->user()->devices()->get()->map(fn ($device) => [
+        $user = auth()->user();
+        $devices = $user->devices()->get()->map(fn ($device) => [
             'id' => $device->id,
             'name' => $device->name,
             'device_id' => $device->device_id,
@@ -31,8 +33,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         return Inertia::render('Dashboard', [
             'devices' => $devices,
+            'geofence' => $user->geofence,
         ]);
     })->name('dashboard');
+
+    Route::get('/geofence', function () {
+        $geofence = auth()->user()->geofence;
+
+        return Inertia::render('Geofence/Index', [
+            'geofence' => $geofence,
+        ]);
+    })->name('geofence');
 
     // Device claiming (any logged-in user)
     Route::get('/devices/claim', [DeviceClaimController::class, 'create'])->name('devices.claim');
@@ -53,6 +64,11 @@ Route::middleware('auth')->group(function () {
 
     // Garage
     Route::post('/garage/trigger', [GarageController::class, 'trigger']);
+
+    // Geofence API (session-authenticated)
+    Route::apiResource('geo-fences', GeoFenceController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::post('geo-fences/{geoFence}/check', [GeoFenceController::class, 'check']);
+    Route::post('geo-fences/{geoFence}/toggle', [GeoFenceController::class, 'toggle']);
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

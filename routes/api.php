@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Api\DeviceRegisterController;
 use App\Http\Controllers\Api\DeviceStatusController;
-use App\Http\Controllers\GeoFenceController;
 use App\Http\Controllers\StreamFeedController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -11,9 +10,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', fn (Request $request) => $request->user());
 
-    // Geo-fences (V1.1 — stubs returning 501)
-    Route::apiResource('geo-fences', GeoFenceController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::post('geo-fences/{geoFence}/check', [GeoFenceController::class, 'check']);
+    // Geo-fences (kept for future React Native / API token auth)
+    // Web-session versions are in routes/web.php
 });
 
 // Device self-registration (called by ESP on first boot — no auth, rate limited)
