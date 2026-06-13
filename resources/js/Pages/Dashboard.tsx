@@ -1,7 +1,10 @@
 import GarageButton from '@/Components/GarageButton';
+import GeofenceToggle from '@/Components/GeofenceToggle';
 import StreamView, { StreamViewHandle } from '@/Components/StreamView';
+import useGeolocation from '@/hooks/useGeolocation';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Geofence } from '@/types';
+import { Head, Link, router } from '@inertiajs/react';
 import { useRef } from 'react';
 
 interface DeviceInfo {
@@ -14,11 +17,18 @@ interface DeviceInfo {
 
 interface DashboardProps {
     devices: DeviceInfo[];
+    geofence: Geofence | null;
 }
 
-export default function Dashboard({ devices }: DashboardProps) {
+export default function Dashboard({ devices, geofence }: DashboardProps) {
     const streamRef = useRef<StreamViewHandle>(null);
     const wasStreamingRef = useRef(false);
+
+    const { tracking, startTracking, stopTracking } = useGeolocation({
+        geofenceId: geofence?.id ?? 0,
+        isActive: geofence?.is_active ?? false,
+        onTriggered: () => router.reload(),
+    });
 
     // Sort: esp32_cam first, esp8266 last
     const sorted = [...devices].sort((a, b) => {
@@ -111,6 +121,30 @@ export default function Dashboard({ devices }: DashboardProps) {
                                     </div>
                                 </div>
                             ))}
+                            {geofence && (
+                                <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                                    <div className="border-b border-gray-100 px-6 py-3">
+                                        <h3 className="text-sm font-semibold text-gray-700">
+                                            Geofence
+                                        </h3>
+                                    </div>
+                                    <div className="flex items-center justify-between p-6">
+                                        <GeofenceToggle
+                                            geofenceId={geofence.id}
+                                            initialActive={geofence.is_active}
+                                            onToggle={(active) => {
+                                                if (active) startTracking();
+                                                else stopTracking();
+                                            }}
+                                        />
+                                        {tracking && (
+                                            <span className="text-xs text-green-600">
+                                                Tracking location...
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

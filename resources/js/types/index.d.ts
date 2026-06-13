@@ -18,6 +18,16 @@ export interface Device {
     user?: User;
 }
 
+export interface Geofence {
+    id: number;
+    user_id: number;
+    north_lat: number;
+    south_lat: number;
+    east_lng: number;
+    west_lng: number;
+    is_active: boolean;
+}
+
 export interface StreamData {
     stream_id: number;
 }
