@@ -68,7 +68,7 @@ export default function useGeolocation({
     }, [checkPosition]);
 
     useEffect(() => {
-        if (!isActive || !tracking) {
+        if (!tracking) {
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
                 intervalRef.current = null;
@@ -93,7 +93,7 @@ export default function useGeolocation({
                 intervalRef.current = null;
             }
         };
-    }, [isActive, tracking, poll]);
+    }, [tracking, poll]);
 
     return {
         tracking,
