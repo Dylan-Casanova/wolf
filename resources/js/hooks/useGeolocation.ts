@@ -17,11 +17,22 @@ export default function useGeolocation({
     isActive,
     onTriggered,
 }: UseGeolocationOptions) {
-    const [tracking, setTracking] = useState(false);
     const [position, setPosition] = useState<[number, number] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const currentInterval = useRef(FAR_INTERVAL);
+    const onTriggeredRef = useRef(onTriggered);
+
+    useEffect(() => {
+        onTriggeredRef.current = onTriggered;
+    }, [onTriggered]);
+
+    const clearPolling = useCallback(() => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
+    }, []);
 
     const checkPosition = useCallback(
         async (pos: GeolocationPosition) => {
@@ -36,8 +47,8 @@ export default function useGeolocation({
                 );
 
                 if (response.data.triggered) {
-                    setTracking(false);
-                    onTriggered();
+                    clearPolling();
+                    onTriggeredRef.current();
                     return;
                 }
 
@@ -52,7 +63,7 @@ export default function useGeolocation({
                 setError('Failed to check position');
             }
         },
-        [geofenceId, onTriggered],
+        [geofenceId, clearPolling],
     );
 
     const poll = useCallback(() => {
@@ -68,11 +79,8 @@ export default function useGeolocation({
     }, [checkPosition]);
 
     useEffect(() => {
-        if (!tracking) {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-            }
+        if (!isActive) {
+            clearPolling();
             return;
         }
 
@@ -87,19 +95,12 @@ export default function useGeolocation({
             poll();
         }, currentInterval.current);
 
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-            }
-        };
-    }, [tracking, poll]);
+        return clearPolling;
+    }, [isActive, poll, clearPolling]);
 
     return {
-        tracking,
+        tracking: isActive,
         position,
-        startTracking: () => setTracking(true),
-        stopTracking: () => setTracking(false),
         error,
     };
 }

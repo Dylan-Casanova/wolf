@@ -24,7 +24,7 @@ export default function Dashboard({ devices, geofence }: DashboardProps) {
     const streamRef = useRef<StreamViewHandle>(null);
     const wasStreamingRef = useRef(false);
 
-    const { tracking, startTracking, stopTracking } = useGeolocation({
+    const { tracking } = useGeolocation({
         geofenceId: geofence?.id ?? 0,
         isActive: geofence?.is_active ?? false,
         onTriggered: () => router.reload(),
@@ -131,11 +131,8 @@ export default function Dashboard({ devices, geofence }: DashboardProps) {
                                     <div className="flex items-center justify-between p-6">
                                         <GeofenceToggle
                                             geofenceId={geofence.id}
-                                            initialActive={geofence.is_active}
-                                            onToggle={(active) => {
-                                                if (active) startTracking();
-                                                else stopTracking();
-                                            }}
+                                            isActive={geofence.is_active}
+                                            onToggled={() => router.reload()}
                                         />
                                         {tracking && (
                                             <span className="text-xs text-green-600">
