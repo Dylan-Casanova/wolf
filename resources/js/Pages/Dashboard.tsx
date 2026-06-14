@@ -1,10 +1,9 @@
 import GarageButton from '@/Components/GarageButton';
 import GeofenceToggle from '@/Components/GeofenceToggle';
 import StreamView, { StreamViewHandle } from '@/Components/StreamView';
-import useGeolocation from '@/hooks/useGeolocation';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Geofence } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { useRef } from 'react';
 
 interface DeviceInfo {
@@ -24,13 +23,6 @@ export default function Dashboard({ devices, geofence }: DashboardProps) {
     const streamRef = useRef<StreamViewHandle>(null);
     const wasStreamingRef = useRef(false);
 
-    const { tracking } = useGeolocation({
-        geofenceId: geofence?.id ?? 0,
-        isActive: geofence?.is_active ?? false,
-        onTriggered: () => router.reload(),
-    });
-
-    // Sort: esp32_cam first, esp8266 last
     const sorted = [...devices].sort((a, b) => {
         if (a.type === 'esp32_cam' && b.type !== 'esp32_cam') return -1;
         if (a.type !== 'esp32_cam' && b.type === 'esp32_cam') return 1;
@@ -128,17 +120,8 @@ export default function Dashboard({ devices, geofence }: DashboardProps) {
                                             Geofence
                                         </h3>
                                     </div>
-                                    <div className="flex items-center justify-between p-6">
-                                        <GeofenceToggle
-                                            geofenceId={geofence.id}
-                                            isActive={geofence.is_active}
-                                            onToggled={() => router.reload()}
-                                        />
-                                        {tracking && (
-                                            <span className="text-xs text-green-600">
-                                                Tracking location...
-                                            </span>
-                                        )}
+                                    <div className="p-6">
+                                        <GeofenceToggle geofence={geofence} />
                                     </div>
                                 </div>
                             )}

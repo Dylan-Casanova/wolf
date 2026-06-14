@@ -1,5 +1,12 @@
-import { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 import axios from 'axios';
+import {
+    forwardRef,
+    useCallback,
+    useEffect,
+    useImperativeHandle,
+    useRef,
+    useState,
+} from 'react';
 
 type StreamStatus = 'idle' | 'connecting' | 'streaming' | 'ended' | 'error';
 
@@ -65,8 +72,7 @@ const StreamView = forwardRef<StreamViewHandle>(function StreamView(_, ref) {
             setTimeLeft(120);
 
             // Subscribe to stream channel via Echo
-            window.Echo
-                .private(`stream.${id}`)
+            window.Echo.private(`stream.${id}`)
                 .listen('.StreamFrameReceived', (e: { frame: string }) => {
                     setFrameSrc(`data:image/jpeg;base64,${e.frame}`);
                     setStatus('streaming');
@@ -138,13 +144,25 @@ const StreamView = forwardRef<StreamViewHandle>(function StreamView(_, ref) {
             <div className="flex flex-col items-center gap-6">
                 <button
                     onClick={startStream}
-                    className="flex h-40 w-40 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition-all duration-150 hover:bg-indigo-700 hover:shadow-xl active:scale-95 focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2"
+                    className="flex h-40 w-40 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition-all duration-150 hover:bg-indigo-700 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2 active:scale-95"
                 >
                     <span className="flex flex-col items-center gap-1">
-                        <svg className="h-10 w-10" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+                        <svg
+                            className="h-10 w-10"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
+                            />
                         </svg>
-                        <span className="text-sm font-semibold tracking-wide">LIVE VIEW</span>
+                        <span className="text-sm font-semibold tracking-wide">
+                            LIVE VIEW
+                        </span>
                     </span>
                 </button>
                 <div className="flex h-72 w-full max-w-lg items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 text-gray-400">
@@ -159,9 +177,24 @@ const StreamView = forwardRef<StreamViewHandle>(function StreamView(_, ref) {
             <div className="flex flex-col items-center gap-6">
                 <div className="flex h-72 w-full max-w-lg items-center justify-center rounded-2xl border border-gray-200 bg-gray-50">
                     <div className="flex flex-col items-center gap-3 text-gray-500">
-                        <svg className="h-8 w-8 animate-spin text-indigo-500" viewBox="0 0 24 24" fill="none">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                        <svg
+                            className="h-8 w-8 animate-spin text-indigo-500"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                        >
+                            <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                            />
+                            <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8v8H4z"
+                            />
                         </svg>
                         <span className="text-sm">Connecting to device...</span>
                     </div>
@@ -175,17 +208,31 @@ const StreamView = forwardRef<StreamViewHandle>(function StreamView(_, ref) {
             <div className="flex flex-col items-center gap-6">
                 <button
                     onClick={startStream}
-                    className="flex h-40 w-40 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition-all duration-150 hover:bg-indigo-700 hover:shadow-xl active:scale-95 focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2"
+                    className="flex h-40 w-40 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition-all duration-150 hover:bg-indigo-700 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2 active:scale-95"
                 >
                     <span className="flex flex-col items-center gap-1">
-                        <svg className="h-10 w-10" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+                        <svg
+                            className="h-10 w-10"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
+                            />
                         </svg>
-                        <span className="text-sm font-semibold tracking-wide">RETRY</span>
+                        <span className="text-sm font-semibold tracking-wide">
+                            RETRY
+                        </span>
                     </span>
                 </button>
                 <div className="flex h-72 w-full max-w-lg items-center justify-center rounded-2xl border border-red-200 bg-red-50 text-red-500">
-                    <span className="text-sm font-medium">Failed to start stream. Try again.</span>
+                    <span className="text-sm font-medium">
+                        Failed to start stream. Try again.
+                    </span>
                 </div>
             </div>
         );
@@ -196,10 +243,22 @@ const StreamView = forwardRef<StreamViewHandle>(function StreamView(_, ref) {
             <div className="flex flex-col items-center gap-6">
                 <div className="flex h-72 w-full max-w-lg items-center justify-center rounded-2xl border border-gray-200 bg-gray-50">
                     <div className="flex flex-col items-center gap-3 text-gray-500">
-                        <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg
+                            className="h-8 w-8 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
                         </svg>
-                        <span className="text-sm font-medium">Stream ended</span>
+                        <span className="text-sm font-medium">
+                            Stream ended
+                        </span>
                     </div>
                 </div>
             </div>
@@ -218,15 +277,21 @@ const StreamView = forwardRef<StreamViewHandle>(function StreamView(_, ref) {
                     />
                 ) : (
                     <div className="flex h-72 w-full items-center justify-center bg-black">
-                        <span className="text-sm text-gray-500">Waiting for first frame...</span>
+                        <span className="text-sm text-gray-500">
+                            Waiting for first frame...
+                        </span>
                     </div>
                 )}
                 <div className="flex items-center justify-between bg-gray-800 px-4 py-2">
                     <div className="flex items-center gap-2">
                         <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-                        <span className="text-xs font-medium text-red-400">LIVE</span>
+                        <span className="text-xs font-medium text-red-400">
+                            LIVE
+                        </span>
                     </div>
-                    <span className="text-xs text-gray-400">{formatTime(timeLeft)}</span>
+                    <span className="text-xs text-gray-400">
+                        {formatTime(timeLeft)}
+                    </span>
                 </div>
             </div>
             <button

@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class GeoFence extends Model
 {
@@ -30,6 +32,18 @@ class GeoFence extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function scheduledTriggers(): HasMany
+    {
+        return $this->hasMany(ScheduledGeofenceTrigger::class);
+    }
+
+    public function pendingScheduledTrigger(): HasOne
+    {
+        return $this->hasOne(ScheduledGeofenceTrigger::class)
+            ->where('status', ScheduledGeofenceTrigger::STATUS_PENDING)
+            ->latestOfMany();
     }
 
     public function contains(float $lat, float $lng): bool

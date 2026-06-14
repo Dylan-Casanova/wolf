@@ -1,106 +1,171 @@
+import ScheduleModal from '@/Components/ScheduleModal';
+import { Geofence, PageProps } from '@/types';
+import { router, usePage } from '@inertiajs/react';
 import axios from 'axios';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface GeofenceToggleProps {
-    geofenceId: number;
-    isActive: boolean;
-    onToggled?: (isActive: boolean) => void;
+    geofence: Geofence;
 }
 
-export default function GeofenceToggle({
-    geofenceId,
-    isActive,
-    onToggled,
-}: GeofenceToggleProps) {
+export default function GeofenceToggle({ geofence }: GeofenceToggleProps) {
+    const { server_now } = usePage<PageProps>().props;
+
+    // Compute the client/server clock offset ONCE on mount.
+    // Used to render an accurate countdown even if the user's clock is skewed.
+    const [serverOffsetMs] = useState(() =>
+        server_now ? new Date(server_now).getTime() - Date.now() : 0,
+    );
+
     const [loading, setLoading] = useState(false);
-    const [locationError, setLocationError] = useState<string | null>(null);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [estimate, setEstimate] = useState<{
+        distance_miles: number;
+        estimated_minutes: number;
+    } | null>(null);
+    const [origin, setOrigin] = useState<{ lat: number; lng: number } | null>(
+        null,
+    );
+    const [error, setError] = useState<string | null>(null);
+    const [countdownText, setCountdownText] = useState<string>('');
 
-    const checkLocationPermission = async (): Promise<boolean> => {
-        if (!navigator.geolocation) {
-            setLocationError(
-                'Your browser does not support location services.',
-            );
-            return false;
+    useEffect(() => {
+        const pending = geofence.pending_scheduled_trigger;
+        if (!pending) {
+            setCountdownText('');
+            return;
         }
+        const fireAt = new Date(pending.scheduled_at).getTime();
+        let intervalId: ReturnType<typeof setInterval> | null = null;
+        let reloadTimer: ReturnType<typeof setTimeout> | null = null;
 
-        if (navigator.permissions) {
-            const status = await navigator.permissions.query({
-                name: 'geolocation',
-            });
-            if (status.state === 'denied') {
-                setLocationError(
-                    'Location access is blocked. Enable it in your browser settings (click the lock icon in the address bar).',
-                );
-                return false;
+        const tick = () => {
+            const ms = fireAt - (Date.now() + serverOffsetMs);
+            if (ms <= 0) {
+                setCountdownText('Triggering...');
+                // Stop counting; give the queue worker a moment, then
+                // reload so the server-side trigger result propagates.
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+                if (!reloadTimer) {
+                    reloadTimer = setTimeout(() => router.reload(), 3000);
+                }
+                return;
             }
-        }
+            const mins = Math.floor(ms / 60000);
+            const secs = Math.floor((ms % 60000) / 1000);
+            setCountdownText(`${mins}:${secs.toString().padStart(2, '0')}`);
+        };
+        tick();
+        intervalId = setInterval(tick, 1000);
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+            if (reloadTimer) clearTimeout(reloadTimer);
+        };
+    }, [geofence.pending_scheduled_trigger, serverOffsetMs]);
 
-        return new Promise((resolve) => {
-            navigator.geolocation.getCurrentPosition(
-                () => {
-                    setLocationError(null);
-                    resolve(true);
-                },
-                () => {
-                    setLocationError(
-                        'Location access denied. Please allow location access and try again.',
-                    );
-                    resolve(false);
-                },
-                { timeout: 10000 },
-            );
+    const getCurrentPosition = (): Promise<GeolocationPosition> => {
+        return new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+            });
         });
     };
 
-    const toggle = async () => {
-        setLocationError(null);
-
-        if (!isActive) {
-            setLoading(true);
-            const allowed = await checkLocationPermission();
-            if (!allowed) {
-                setLoading(false);
-                return;
-            }
+    const handleEnable = async () => {
+        setError(null);
+        if (!navigator.geolocation) {
+            setError('Your browser does not support location services.');
+            return;
         }
-
         setLoading(true);
         try {
+            const pos = await getCurrentPosition();
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            setOrigin({ lat, lng });
             const response = await axios.post(
-                `/geo-fences/${geofenceId}/toggle`,
+                `/geo-fences/${geofence.id}/estimate`,
+                { lat, lng },
             );
-            onToggled?.(response.data.is_active);
+            setEstimate(response.data);
+            setModalOpen(true);
         } catch {
-            // revert on failure
+            setError(
+                'Failed to read your location. Please allow access and try again.',
+            );
         } finally {
             setLoading(false);
         }
     };
 
+    const handleConfirm = async (minutes: number) => {
+        if (!origin) return;
+        setLoading(true);
+        try {
+            await axios.post(`/geo-fences/${geofence.id}/schedule-trigger`, {
+                minutes,
+                origin_lat: origin.lat,
+                origin_lng: origin.lng,
+            });
+            setModalOpen(false);
+            router.reload();
+        } catch {
+            setError('Failed to schedule trigger.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCancelScheduled = async () => {
+        setLoading(true);
+        try {
+            await axios.delete(`/geo-fences/${geofence.id}/scheduled-trigger`);
+            router.reload();
+        } catch {
+            setError('Failed to cancel.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const isArmed = geofence.is_active && !!geofence.pending_scheduled_trigger;
+
     return (
         <div className="flex flex-col gap-2">
             <button
-                onClick={toggle}
+                onClick={isArmed ? handleCancelScheduled : handleEnable}
                 disabled={loading}
                 className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-                    isActive
+                    isArmed
                         ? 'bg-green-600 text-white hover:bg-green-700'
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 } disabled:opacity-50`}
             >
                 <span
                     className={`h-2.5 w-2.5 rounded-full ${
-                        isActive ? 'animate-pulse bg-white' : 'bg-gray-400'
+                        isArmed ? 'animate-pulse bg-white' : 'bg-gray-400'
                     }`}
                 />
                 {loading
-                    ? 'Checking location...'
-                    : isActive
-                      ? 'Geofencing Active'
-                      : 'Geofencing Off'}
+                    ? 'Working...'
+                    : isArmed
+                      ? countdownText === 'Triggering...'
+                          ? 'Triggering...'
+                          : `Opens in ${countdownText} (tap to cancel)`
+                      : 'Enable Geofence Tracking'}
             </button>
-            {locationError && (
-                <p className="text-xs text-red-500">{locationError}</p>
+            {error && <p className="text-xs text-red-500">{error}</p>}
+            {modalOpen && estimate && (
+                <ScheduleModal
+                    distanceMiles={estimate.distance_miles}
+                    estimatedMinutes={estimate.estimated_minutes}
+                    onConfirm={handleConfirm}
+                    onClose={() => setModalOpen(false)}
+                />
             )}
         </div>
     );
