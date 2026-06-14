@@ -72,10 +72,15 @@ export default function Register() {
                         value={data.phone_number}
                         className="mt-1 block w-full"
                         autoComplete="tel"
-                        onChange={(e) => setData('phone_number', e.target.value)}
+                        onChange={(e) =>
+                            setData('phone_number', e.target.value)
+                        }
                     />
 
-                    <InputError message={errors.phone_number} className="mt-2" />
+                    <InputError
+                        message={errors.phone_number}
+                        className="mt-2"
+                    />
                 </div>
 
                 <div className="mt-4">

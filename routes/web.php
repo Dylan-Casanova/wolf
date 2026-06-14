@@ -33,15 +33,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         return Inertia::render('Dashboard', [
             'devices' => $devices,
-            'geofence' => $user->geofence,
+            'geofence' => $user->geofence?->load('pendingScheduledTrigger'),
+            'server_now' => now()->toIso8601String(),
         ]);
     })->name('dashboard');
 
     Route::get('/geofence', function () {
-        $geofence = auth()->user()->geofence;
+        $geofence = auth()->user()->geofence?->load('pendingScheduledTrigger');
 
         return Inertia::render('Geofence/Index', [
             'geofence' => $geofence,
+            'server_now' => now()->toIso8601String(),
         ]);
     })->name('geofence');
 
@@ -69,6 +71,9 @@ Route::middleware('auth')->group(function () {
     Route::apiResource('geo-fences', GeoFenceController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::post('geo-fences/{geoFence}/check', [GeoFenceController::class, 'check']);
     Route::post('geo-fences/{geoFence}/toggle', [GeoFenceController::class, 'toggle']);
+    Route::post('geo-fences/{geoFence}/estimate', [GeoFenceController::class, 'estimate']);
+    Route::post('geo-fences/{geoFence}/schedule-trigger', [GeoFenceController::class, 'scheduleTrigger']);
+    Route::delete('geo-fences/{geoFence}/scheduled-trigger', [GeoFenceController::class, 'cancelScheduledTrigger']);
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

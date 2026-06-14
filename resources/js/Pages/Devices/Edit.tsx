@@ -1,4 +1,3 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DangerButton from '@/Components/DangerButton';
 import DeviceTokenBanner from '@/Components/DeviceTokenBanner';
 import InputError from '@/Components/InputError';
@@ -7,6 +6,7 @@ import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Device, PageProps, User } from '@/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
@@ -21,7 +21,8 @@ export default function Edit({
     deviceTypes: { value: string; label: string }[];
 }>) {
     const { flash } = usePage<PageProps>().props;
-    const [confirmingTokenRegeneration, setConfirmingTokenRegeneration] = useState(false);
+    const [confirmingTokenRegeneration, setConfirmingTokenRegeneration] =
+        useState(false);
 
     const { data, setData, put, processing, errors } = useForm({
         name: device.name,
@@ -65,36 +66,57 @@ export default function Edit({
                     <div className="bg-white p-6 shadow-sm sm:rounded-lg">
                         <form onSubmit={submit} className="space-y-6">
                             <div>
-                                <InputLabel htmlFor="name" value="Device Name" />
+                                <InputLabel
+                                    htmlFor="name"
+                                    value="Device Name"
+                                />
                                 <TextInput
                                     id="name"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('name', e.target.value)
+                                    }
                                     className="mt-1 block w-full"
                                     required
                                     isFocused
                                 />
-                                <InputError message={errors.name} className="mt-2" />
+                                <InputError
+                                    message={errors.name}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="device_id" value="Device ID" />
+                                <InputLabel
+                                    htmlFor="device_id"
+                                    value="Device ID"
+                                />
                                 <TextInput
                                     id="device_id"
                                     value={data.device_id}
-                                    onChange={(e) => setData('device_id', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('device_id', e.target.value)
+                                    }
                                     className="mt-1 block w-full"
                                     required
                                 />
-                                <InputError message={errors.device_id} className="mt-2" />
+                                <InputError
+                                    message={errors.device_id}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="user_id" value="Assign to User" />
+                                <InputLabel
+                                    htmlFor="user_id"
+                                    value="Assign to User"
+                                />
                                 <select
                                     id="user_id"
                                     value={data.user_id}
-                                    onChange={(e) => setData('user_id', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('user_id', e.target.value)
+                                    }
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 >
                                     <option value="">Unclaimed</option>
@@ -104,15 +126,23 @@ export default function Edit({
                                         </option>
                                     ))}
                                 </select>
-                                <InputError message={errors.user_id} className="mt-2" />
+                                <InputError
+                                    message={errors.user_id}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="type" value="Device Type" />
+                                <InputLabel
+                                    htmlFor="type"
+                                    value="Device Type"
+                                />
                                 <select
                                     id="type"
                                     value={data.type}
-                                    onChange={(e) => setData('type', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('type', e.target.value)
+                                    }
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     required
                                 >
@@ -122,7 +152,10 @@ export default function Edit({
                                         </option>
                                     ))}
                                 </select>
-                                <InputError message={errors.type} className="mt-2" />
+                                <InputError
+                                    message={errors.type}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div className="flex items-center justify-end gap-4">
@@ -140,12 +173,20 @@ export default function Edit({
                     </div>
 
                     <div className="mt-6 bg-white p-6 shadow-sm sm:rounded-lg">
-                        <h3 className="text-lg font-medium text-gray-900">Device Token</h3>
+                        <h3 className="text-lg font-medium text-gray-900">
+                            Device Token
+                        </h3>
                         <p className="mt-1 text-sm text-gray-600">
-                            Regenerate the device token if the original was lost or compromised. This will invalidate the previous token.
+                            Regenerate the device token if the original was lost
+                            or compromised. This will invalidate the previous
+                            token.
                         </p>
                         <div className="mt-4">
-                            <DangerButton onClick={() => setConfirmingTokenRegeneration(true)}>
+                            <DangerButton
+                                onClick={() =>
+                                    setConfirmingTokenRegeneration(true)
+                                }
+                            >
                                 Regenerate Token
                             </DangerButton>
                         </div>
@@ -159,11 +200,18 @@ export default function Edit({
                         Regenerate device token?
                     </h2>
                     <p className="mt-1 text-sm text-gray-600">
-                        The current token will stop working immediately. You will need to update the token on the physical device.
+                        The current token will stop working immediately. You
+                        will need to update the token on the physical device.
                     </p>
                     <div className="mt-6 flex justify-end">
-                        <SecondaryButton onClick={closeModal}>Cancel</SecondaryButton>
-                        <DangerButton className="ms-3" disabled={regenerating} onClick={regenerateToken}>
+                        <SecondaryButton onClick={closeModal}>
+                            Cancel
+                        </SecondaryButton>
+                        <DangerButton
+                            className="ms-3"
+                            disabled={regenerating}
+                            onClick={regenerateToken}
+                        >
                             Regenerate Token
                         </DangerButton>
                     </div>

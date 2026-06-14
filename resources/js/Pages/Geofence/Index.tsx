@@ -1,12 +1,11 @@
 import AddressSearch from '@/Components/AddressSearch';
 import GeofenceMap from '@/Components/GeofenceMap';
 import GeofenceToggle from '@/Components/GeofenceToggle';
-import useGeolocation from '@/hooks/useGeolocation';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Geofence } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 interface GeofencePageProps {
     geofence: Geofence | null;
@@ -31,16 +30,6 @@ export default function Index({ geofence }: GeofencePageProps) {
     );
     const [saving, setSaving] = useState(false);
     const [showMap, setShowMap] = useState(!!geofence);
-
-    const handleTriggered = useCallback(() => {
-        router.reload();
-    }, []);
-
-    const { tracking, position, error } = useGeolocation({
-        geofenceId: geofence?.id ?? 0,
-        isActive: geofence?.is_active ?? false,
-        onTriggered: handleTriggered,
-    });
 
     const handleAddressSelect = (lat: number, lng: number) => {
         setCenter([lat, lng]);
@@ -107,9 +96,7 @@ export default function Index({ geofence }: GeofencePageProps) {
                                     <GeofenceMap
                                         geofence={geofence}
                                         center={center}
-                                        userPosition={
-                                            tracking ? position : null
-                                        }
+                                        userPosition={null}
                                         onBoundsChange={setBounds}
                                     />
 
@@ -117,22 +104,8 @@ export default function Index({ geofence }: GeofencePageProps) {
                                         <div className="flex items-center gap-3">
                                             {geofence && (
                                                 <GeofenceToggle
-                                                    geofenceId={geofence.id}
-                                                    isActive={geofence.is_active}
-                                                    onToggled={() =>
-                                                        router.reload()
-                                                    }
+                                                    geofence={geofence}
                                                 />
-                                            )}
-                                            {tracking && (
-                                                <span className="text-xs text-green-600">
-                                                    Tracking location...
-                                                </span>
-                                            )}
-                                            {error && (
-                                                <span className="text-xs text-red-500">
-                                                    {error}
-                                                </span>
                                             )}
                                         </div>
 

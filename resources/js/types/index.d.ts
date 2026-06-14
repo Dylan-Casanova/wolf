@@ -18,6 +18,15 @@ export interface Device {
     user?: User;
 }
 
+export interface ScheduledTrigger {
+    id: number;
+    scheduled_at: string;
+    status: 'pending' | 'fired' | 'cancelled';
+    origin_lat: number;
+    origin_lng: number;
+    origin_distance_meters: number;
+}
+
 export interface Geofence {
     id: number;
     user_id: number;
@@ -26,6 +35,7 @@ export interface Geofence {
     east_lng: number;
     west_lng: number;
     is_active: boolean;
+    pending_scheduled_trigger: ScheduledTrigger | null;
 }
 
 export interface StreamData {
@@ -41,4 +51,5 @@ export type PageProps<
     flash: {
         device_token?: string;
     };
+    server_now?: string;
 };

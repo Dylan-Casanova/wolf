@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 type GarageState = 'idle' | 'triggering' | 'triggered' | 'error';
 
@@ -9,7 +9,11 @@ interface GarageButtonProps {
     onTriggerComplete?: () => void;
 }
 
-export default function GarageButton({ deviceId, onTriggerStart, onTriggerComplete }: GarageButtonProps) {
+export default function GarageButton({
+    deviceId,
+    onTriggerStart,
+    onTriggerComplete,
+}: GarageButtonProps) {
     const [state, setState] = useState<GarageState>('idle');
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -75,11 +79,11 @@ export default function GarageButton({ deviceId, onTriggerStart, onTriggerComple
     };
 
     return (
-        <div className="w-full flex flex-col gap-3">
+        <div className="flex w-full flex-col gap-3">
             <button
                 onClick={trigger}
                 disabled={state === 'triggering'}
-                className={`w-full px-6 py-3 rounded-lg font-semibold transition-colors ${colors[state]} disabled:opacity-75`}
+                className={`w-full rounded-lg px-6 py-3 font-semibold transition-colors ${colors[state]} disabled:opacity-75`}
             >
                 {label[state]}
             </button>

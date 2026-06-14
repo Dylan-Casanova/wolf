@@ -180,10 +180,7 @@ function EditableRectangle({
                     west = pos.lng;
                 }
 
-                const newBounds = L.latLngBounds(
-                    [south, west],
-                    [north, east],
-                );
+                const newBounds = L.latLngBounds([south, west], [north, east]);
                 rectRef.current!.setBounds(newBounds);
 
                 const nb = rectRef.current!.getBounds();
