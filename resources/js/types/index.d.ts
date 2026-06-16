@@ -34,6 +34,8 @@ export interface Geofence {
     south_lat: number;
     east_lng: number;
     west_lng: number;
+    address_lat: number | null;
+    address_lng: number | null;
     is_active: boolean;
     pending_scheduled_trigger: ScheduledTrigger | null;
 }

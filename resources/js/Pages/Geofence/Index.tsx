@@ -28,22 +28,33 @@ export default function Index({ geofence }: GeofencePageProps) {
               }
             : null,
     );
+    const [addressPoint, setAddressPoint] = useState<[number, number] | null>(
+        geofence?.address_lat != null && geofence?.address_lng != null
+            ? [geofence.address_lat, geofence.address_lng]
+            : null,
+    );
     const [saving, setSaving] = useState(false);
     const [showMap, setShowMap] = useState(!!geofence);
 
     const handleAddressSelect = (lat: number, lng: number) => {
         setCenter([lat, lng]);
+        setAddressPoint([lat, lng]);
         setShowMap(true);
     };
 
     const handleSave = async () => {
         if (!bounds) return;
+        const payload = {
+            ...bounds,
+            address_lat: addressPoint?.[0] ?? null,
+            address_lng: addressPoint?.[1] ?? null,
+        };
         setSaving(true);
         try {
             if (geofence) {
-                await axios.put(`/geo-fences/${geofence.id}`, bounds);
+                await axios.put(`/geo-fences/${geofence.id}`, payload);
             } else {
-                await axios.post('/geo-fences', bounds);
+                await axios.post('/geo-fences', payload);
             }
             router.reload();
         } catch {
@@ -56,6 +67,13 @@ export default function Index({ geofence }: GeofencePageProps) {
     const handleDelete = async () => {
         if (!geofence) return;
         await axios.delete(`/geo-fences/${geofence.id}`);
+        // Reset local UI state so we land back on the empty/search view after
+        // reload. Inertia preserves component state across reloads, so these
+        // need to be cleared explicitly.
+        setShowMap(false);
+        setBounds(null);
+        setCenter(null);
+        setAddressPoint(null);
         router.reload();
     };
 
@@ -97,6 +115,7 @@ export default function Index({ geofence }: GeofencePageProps) {
                                         geofence={geofence}
                                         center={center}
                                         userPosition={null}
+                                        addressPoint={addressPoint}
                                         onBoundsChange={setBounds}
                                     />
 

@@ -8,6 +8,14 @@ interface ScheduleModalProps {
     onClose: () => void;
 }
 
+const PRESETS = [15, 30, 60, 90, 120, 180];
+const MIN_MINUTES = 1;
+const MAX_MINUTES = 180;
+const STEP = 1;
+
+const clamp = (n: number) =>
+    Math.max(MIN_MINUTES, Math.min(MAX_MINUTES, n));
+
 export default function ScheduleModal({
     distanceMiles,
     estimatedMinutes,
@@ -45,27 +53,75 @@ export default function ScheduleModal({
                     </div>
                 </div>
 
-                <label className="mt-4 block">
-                    <span className="text-sm font-medium text-gray-700">
+                <div className="mt-4">
+                    <span className="block text-sm font-medium text-gray-700">
                         Open garage in (minutes)
                     </span>
-                    <input
-                        type="number"
-                        min={1}
-                        max={180}
-                        value={minutes}
-                        onChange={(e) => {
-                            const v = parseInt(e.target.value, 10);
-                            if (!isNaN(v)) {
-                                setMinutes(Math.max(1, Math.min(180, v)));
-                            }
-                        }}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    />
-                    <span className="mt-1 block text-xs text-gray-500">
-                        Max 180 minutes (3 hours).
+
+                    <div className="mt-2 flex flex-wrap gap-2">
+                        {PRESETS.map((p) => (
+                            <button
+                                key={p}
+                                type="button"
+                                onClick={() => setMinutes(p)}
+                                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                                    minutes === p
+                                        ? 'bg-indigo-600 text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                {p}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="mt-3 flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setMinutes(clamp(minutes - STEP))}
+                            disabled={minutes <= MIN_MINUTES}
+                            aria-label="Decrease by 1"
+                            className="flex h-12 w-12 items-center justify-center rounded-md bg-gray-100 text-2xl font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-40"
+                        >
+                            −
+                        </button>
+                        <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={minutes}
+                            onChange={(e) => {
+                                const raw = e.target.value.replace(/\D/g, '');
+                                if (raw === '') {
+                                    setMinutes(MIN_MINUTES);
+                                    return;
+                                }
+                                const v = parseInt(raw, 10);
+                                if (!isNaN(v)) setMinutes(clamp(v));
+                            }}
+                            onBlur={(e) => {
+                                // Snap empty/invalid input back to a valid value
+                                const v = parseInt(e.target.value, 10);
+                                setMinutes(isNaN(v) ? MIN_MINUTES : clamp(v));
+                            }}
+                            className="block h-12 flex-1 rounded-md border-gray-300 text-center text-xl font-semibold tabular-nums shadow-sm focus:border-indigo-500 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setMinutes(clamp(minutes + STEP))}
+                            disabled={minutes >= MAX_MINUTES}
+                            aria-label="Increase by 1"
+                            className="flex h-12 w-12 items-center justify-center rounded-md bg-gray-100 text-2xl font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-40"
+                        >
+                            +
+                        </button>
+                    </div>
+
+                    <span className="mt-2 block text-xs text-gray-500">
+                        Max {MAX_MINUTES} minutes (3 hours). Tap a preset or
+                        type a custom value.
                     </span>
-                </label>
+                </div>
 
                 <p className="mt-4 text-xs text-gray-500">
                     Garage opens when the timer ends. Cancel anytime.
