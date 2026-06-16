@@ -18,6 +18,8 @@ class GeoFence extends Model
         'south_lat',
         'east_lng',
         'west_lng',
+        'address_lat',
+        'address_lng',
         'is_active',
     ];
 
@@ -26,6 +28,8 @@ class GeoFence extends Model
         'south_lat' => 'float',
         'east_lng' => 'float',
         'west_lng' => 'float',
+        'address_lat' => 'float',
+        'address_lng' => 'float',
         'is_active' => 'boolean',
     ];
 

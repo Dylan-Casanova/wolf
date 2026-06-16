@@ -30,6 +30,8 @@ class GeoFenceController extends Controller
             'south_lat' => ['required', 'numeric', 'between:-90,90'],
             'east_lng' => ['required', 'numeric', 'between:-180,180'],
             'west_lng' => ['required', 'numeric', 'between:-180,180'],
+            'address_lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'address_lng' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
         $geofence = $request->user()->geofence()->create($validated);
@@ -48,6 +50,8 @@ class GeoFenceController extends Controller
             'south_lat' => ['required', 'numeric', 'between:-90,90'],
             'east_lng' => ['required', 'numeric', 'between:-180,180'],
             'west_lng' => ['required', 'numeric', 'between:-180,180'],
+            'address_lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'address_lng' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
         $geoFence->update($validated);

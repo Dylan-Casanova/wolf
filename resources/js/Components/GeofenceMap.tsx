@@ -8,6 +8,7 @@ interface GeofenceMapProps {
     geofence: Geofence | null;
     center: [number, number] | null;
     userPosition: [number, number] | null;
+    addressPoint: [number, number] | null;
     onBoundsChange: (bounds: {
         north_lat: number;
         south_lat: number;
@@ -15,6 +16,13 @@ interface GeofenceMapProps {
         west_lng: number;
     }) => void;
 }
+
+const addressIcon = L.divIcon({
+    className: '',
+    html: '<div style="width:22px;height:22px;background:#ef4444;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+});
 
 const cornerIcon = L.divIcon({
     className: '',
@@ -28,6 +36,34 @@ function MapCenter({ center }: { center: [number, number] }) {
     useEffect(() => {
         map.setView(center, 16);
     }, [center, map]);
+    return null;
+}
+
+function AddressMarker({ position }: { position: [number, number] }) {
+    const map = useMap();
+    const markerRef = useRef<L.Marker | null>(null);
+
+    useEffect(() => {
+        if (markerRef.current) {
+            markerRef.current.setLatLng(position);
+        } else {
+            markerRef.current = L.marker(position, {
+                icon: addressIcon,
+                interactive: false,
+                keyboard: false,
+            }).addTo(map);
+        }
+    }, [position, map]);
+
+    useEffect(() => {
+        return () => {
+            if (markerRef.current) {
+                map.removeLayer(markerRef.current);
+                markerRef.current = null;
+            }
+        };
+    }, [map]);
+
     return null;
 }
 
@@ -220,6 +256,7 @@ export default function GeofenceMap({
     geofence,
     center,
     userPosition,
+    addressPoint,
     onBoundsChange,
 }: GeofenceMapProps) {
     const defaultCenter: [number, number] = [29.4241, -98.4936];
@@ -272,6 +309,7 @@ export default function GeofenceMap({
                 bounds={rectBounds}
                 onBoundsChange={onBoundsChange}
             />
+            {addressPoint && <AddressMarker position={addressPoint} />}
             {userPosition && <UserMarker position={userPosition} />}
         </MapContainer>
     );
