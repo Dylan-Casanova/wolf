@@ -48,148 +48,128 @@ export default function Edit({
     const closeModal = () => setConfirmingTokenRegeneration(false);
 
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Edit Device
-                </h2>
-            }
-        >
+        <AuthenticatedLayout>
             <Head title="Edit Device" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-2xl sm:px-6 lg:px-8">
-                    {flash.device_token && (
-                        <DeviceTokenBanner token={flash.device_token} />
-                    )}
+            <div className="rounded-wolf-card border border-wolf-card-border bg-black/40 p-6 text-slate-200">
+                {flash.device_token && (
+                    <DeviceTokenBanner token={flash.device_token} />
+                )}
 
-                    <div className="bg-white p-6 shadow-sm sm:rounded-lg">
-                        <form onSubmit={submit} className="space-y-6">
-                            <div>
-                                <InputLabel
-                                    htmlFor="name"
-                                    value="Device Name"
-                                />
-                                <TextInput
-                                    id="name"
-                                    value={data.name}
-                                    onChange={(e) =>
-                                        setData('name', e.target.value)
-                                    }
-                                    className="mt-1 block w-full"
-                                    required
-                                    isFocused
-                                />
-                                <InputError
-                                    message={errors.name}
-                                    className="mt-2"
-                                />
-                            </div>
-
-                            <div>
-                                <InputLabel
-                                    htmlFor="device_id"
-                                    value="Device ID"
-                                />
-                                <TextInput
-                                    id="device_id"
-                                    value={data.device_id}
-                                    onChange={(e) =>
-                                        setData('device_id', e.target.value)
-                                    }
-                                    className="mt-1 block w-full"
-                                    required
-                                />
-                                <InputError
-                                    message={errors.device_id}
-                                    className="mt-2"
-                                />
-                            </div>
-
-                            <div>
-                                <InputLabel
-                                    htmlFor="user_id"
-                                    value="Assign to User"
-                                />
-                                <select
-                                    id="user_id"
-                                    value={data.user_id}
-                                    onChange={(e) =>
-                                        setData('user_id', e.target.value)
-                                    }
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                >
-                                    <option value="">Unclaimed</option>
-                                    {users.map((user) => (
-                                        <option key={user.id} value={user.id}>
-                                            {user.name} ({user.email})
-                                        </option>
-                                    ))}
-                                </select>
-                                <InputError
-                                    message={errors.user_id}
-                                    className="mt-2"
-                                />
-                            </div>
-
-                            <div>
-                                <InputLabel
-                                    htmlFor="type"
-                                    value="Device Type"
-                                />
-                                <select
-                                    id="type"
-                                    value={data.type}
-                                    onChange={(e) =>
-                                        setData('type', e.target.value)
-                                    }
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    required
-                                >
-                                    {deviceTypes.map((dt) => (
-                                        <option key={dt.value} value={dt.value}>
-                                            {dt.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                <InputError
-                                    message={errors.type}
-                                    className="mt-2"
-                                />
-                            </div>
-
-                            <div className="flex items-center justify-end gap-4">
-                                <Link
-                                    href={route('devices.index')}
-                                    className="text-sm text-gray-600 underline hover:text-gray-900"
-                                >
-                                    Cancel
-                                </Link>
-                                <PrimaryButton disabled={processing}>
-                                    Update Device
-                                </PrimaryButton>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div className="mt-6 bg-white p-6 shadow-sm sm:rounded-lg">
-                        <h3 className="text-lg font-medium text-gray-900">
-                            Device Token
-                        </h3>
-                        <p className="mt-1 text-sm text-gray-600">
-                            Regenerate the device token if the original was lost
-                            or compromised. This will invalidate the previous
-                            token.
-                        </p>
-                        <div className="mt-4">
-                            <DangerButton
-                                onClick={() =>
-                                    setConfirmingTokenRegeneration(true)
+                <div className="bg-white p-6 shadow-sm sm:rounded-lg">
+                    <form onSubmit={submit} className="space-y-6">
+                        <div>
+                            <InputLabel htmlFor="name" value="Device Name" />
+                            <TextInput
+                                id="name"
+                                value={data.name}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
                                 }
-                            >
-                                Regenerate Token
-                            </DangerButton>
+                                className="mt-1 block w-full"
+                                required
+                                isFocused
+                            />
+                            <InputError
+                                message={errors.name}
+                                className="mt-2"
+                            />
                         </div>
+
+                        <div>
+                            <InputLabel htmlFor="device_id" value="Device ID" />
+                            <TextInput
+                                id="device_id"
+                                value={data.device_id}
+                                onChange={(e) =>
+                                    setData('device_id', e.target.value)
+                                }
+                                className="mt-1 block w-full"
+                                required
+                            />
+                            <InputError
+                                message={errors.device_id}
+                                className="mt-2"
+                            />
+                        </div>
+
+                        <div>
+                            <InputLabel
+                                htmlFor="user_id"
+                                value="Assign to User"
+                            />
+                            <select
+                                id="user_id"
+                                value={data.user_id}
+                                onChange={(e) =>
+                                    setData('user_id', e.target.value)
+                                }
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            >
+                                <option value="">Unclaimed</option>
+                                {users.map((user) => (
+                                    <option key={user.id} value={user.id}>
+                                        {user.name} ({user.email})
+                                    </option>
+                                ))}
+                            </select>
+                            <InputError
+                                message={errors.user_id}
+                                className="mt-2"
+                            />
+                        </div>
+
+                        <div>
+                            <InputLabel htmlFor="type" value="Device Type" />
+                            <select
+                                id="type"
+                                value={data.type}
+                                onChange={(e) =>
+                                    setData('type', e.target.value)
+                                }
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                required
+                            >
+                                {deviceTypes.map((dt) => (
+                                    <option key={dt.value} value={dt.value}>
+                                        {dt.label}
+                                    </option>
+                                ))}
+                            </select>
+                            <InputError
+                                message={errors.type}
+                                className="mt-2"
+                            />
+                        </div>
+
+                        <div className="flex items-center justify-end gap-4">
+                            <Link
+                                href={route('devices.index')}
+                                className="text-sm text-gray-600 underline hover:text-gray-900"
+                            >
+                                Cancel
+                            </Link>
+                            <PrimaryButton disabled={processing}>
+                                Update Device
+                            </PrimaryButton>
+                        </div>
+                    </form>
+                </div>
+
+                <div className="mt-6 bg-white p-6 shadow-sm sm:rounded-lg">
+                    <h3 className="text-lg font-medium text-gray-900">
+                        Device Token
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-600">
+                        Regenerate the device token if the original was lost or
+                        compromised. This will invalidate the previous token.
+                    </p>
+                    <div className="mt-4">
+                        <DangerButton
+                            onClick={() => setConfirmingTokenRegeneration(true)}
+                        >
+                            Regenerate Token
+                        </DangerButton>
                     </div>
                 </div>
             </div>
