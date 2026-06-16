@@ -90,7 +90,9 @@ export function GeofenceMiniControl({ geofence }: Props) {
         try {
             const position = await new Promise<GeolocationPosition>(
                 (resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    navigator.geolocation.getCurrentPosition(
+                        resolve,
+                        reject,
                         { enableHighAccuracy: true, timeout: 10000 },
                     );
                 },
