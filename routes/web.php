@@ -47,8 +47,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('geofence');
 
-    // Device claiming (any logged-in user)
-    Route::get('/devices/claim', [DeviceClaimController::class, 'create'])->name('devices.claim');
+    // Device claiming (POST only — UI lives in the Navbar1 modal)
     Route::post('/devices/claim', [DeviceClaimController::class, 'store']);
 
     // Admin-only device management

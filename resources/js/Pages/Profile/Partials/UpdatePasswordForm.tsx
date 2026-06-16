@@ -6,6 +6,12 @@ import { Transition } from '@headlessui/react';
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler, useRef } from 'react';
 
+const labelDark = '!text-slate-300';
+const inputDark =
+    '!rounded-wolf-pill !border-wolf-glass-border !bg-white/5 !text-white !placeholder-slate-500 !shadow-none focus:!border-wolf-active-border focus:!ring-1 focus:!ring-wolf-active-border';
+const buttonDark =
+    '!rounded-wolf-pill !bg-gradient-to-br !from-indigo-500 !to-indigo-700 !text-white !shadow-[0_8px_24px_rgba(99,102,241,0.4)] hover:!brightness-110';
+
 export default function UpdatePasswordForm({
     className = '',
 }: {
@@ -51,11 +57,11 @@ export default function UpdatePasswordForm({
     return (
         <section className={className}>
             <header>
-                <h2 className="text-lg font-medium text-gray-900">
+                <h2 className="text-lg font-semibold text-white">
                     Update Password
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm text-slate-400">
                     Ensure your account is using a long, random password to stay
                     secure.
                 </p>
@@ -66,6 +72,7 @@ export default function UpdatePasswordForm({
                     <InputLabel
                         htmlFor="current_password"
                         value="Current Password"
+                        className={labelDark}
                     />
 
                     <TextInput
@@ -76,7 +83,7 @@ export default function UpdatePasswordForm({
                             setData('current_password', e.target.value)
                         }
                         type="password"
-                        className="mt-1 block w-full"
+                        className={`mt-1 block w-full ${inputDark}`}
                         autoComplete="current-password"
                     />
 
@@ -87,7 +94,11 @@ export default function UpdatePasswordForm({
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="password" value="New Password" />
+                    <InputLabel
+                        htmlFor="password"
+                        value="New Password"
+                        className={labelDark}
+                    />
 
                     <TextInput
                         id="password"
@@ -95,7 +106,7 @@ export default function UpdatePasswordForm({
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
                         type="password"
-                        className="mt-1 block w-full"
+                        className={`mt-1 block w-full ${inputDark}`}
                         autoComplete="new-password"
                     />
 
@@ -106,6 +117,7 @@ export default function UpdatePasswordForm({
                     <InputLabel
                         htmlFor="password_confirmation"
                         value="Confirm Password"
+                        className={labelDark}
                     />
 
                     <TextInput
@@ -115,7 +127,7 @@ export default function UpdatePasswordForm({
                             setData('password_confirmation', e.target.value)
                         }
                         type="password"
-                        className="mt-1 block w-full"
+                        className={`mt-1 block w-full ${inputDark}`}
                         autoComplete="new-password"
                     />
 
@@ -126,7 +138,9 @@ export default function UpdatePasswordForm({
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Save</PrimaryButton>
+                    <PrimaryButton disabled={processing} className={buttonDark}>
+                        Save
+                    </PrimaryButton>
 
                     <Transition
                         show={recentlySuccessful}
@@ -135,7 +149,7 @@ export default function UpdatePasswordForm({
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <p className="text-sm text-gray-600">Saved.</p>
+                        <p className="text-sm text-emerald-400">Saved.</p>
                     </Transition>
                 </div>
             </form>

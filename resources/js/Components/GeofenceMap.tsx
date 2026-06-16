@@ -19,9 +19,9 @@ interface GeofenceMapProps {
 
 const addressIcon = L.divIcon({
     className: '',
-    html: '<div style="width:22px;height:22px;background:#ef4444;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',
-    iconSize: [22, 22],
-    iconAnchor: [11, 11],
+    html: '<svg width="28" height="36" viewBox="0 0 28 36" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 3px 4px rgba(0,0,0,0.45));"><path d="M14 0C6.27 0 0 6.27 0 14c0 10 14 22 14 22s14-12 14-22c0-7.73-6.27-14-14-14z" fill="#ef4444" stroke="#fff" stroke-width="2"/><circle cx="14" cy="14" r="5" fill="#fff"/></svg>',
+    iconSize: [28, 36],
+    iconAnchor: [14, 36],
 });
 
 const cornerIcon = L.divIcon({

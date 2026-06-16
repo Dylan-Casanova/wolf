@@ -75,13 +75,4 @@ class DeviceClaimTest extends TestCase
 
         $response->assertRedirect('/login');
     }
-
-    public function test_claim_page_is_accessible_to_logged_in_users(): void
-    {
-        $user = User::factory()->create();
-
-        $response = $this->actingAs($user)->get('/devices/claim');
-
-        $response->assertOk();
-    }
 }
