@@ -48,7 +48,7 @@ export default function Welcome({ auth }: PageProps) {
                         <h1 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
                             Your garage opens{' '}
                             <span className="text-red-400">
-                                before you break.
+                                before you brake.
                             </span>
                         </h1>
                         <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">
