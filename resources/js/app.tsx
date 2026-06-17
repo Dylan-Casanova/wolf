@@ -1,11 +1,15 @@
 import '../css/app.css';
 import './bootstrap';
 
-import { createInertiaApp } from '@inertiajs/react';
+import { startBusy, stopBusy } from '@/Stores/busyStore';
+import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+router.on('start', () => startBusy());
+router.on('finish', () => stopBusy());
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -19,7 +23,5 @@ createInertiaApp({
 
         root.render(<App {...props} />);
     },
-    progress: {
-        color: '#4B5563',
-    },
+    progress: false,
 });

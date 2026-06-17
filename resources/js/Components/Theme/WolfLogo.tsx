@@ -5,7 +5,7 @@ export function WolfLogo() {
                 IopenIt
             </div>
             <div className="mt-1 text-[10px] font-normal uppercase tracking-[4px] text-slate-400">
-                Garage Control
+                Smart Garage
             </div>
         </div>
     );

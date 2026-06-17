@@ -1,3 +1,4 @@
+import { BusyOverlay } from '@/Components/Theme/BusyOverlay';
 import { DeviceClaimModal } from '@/Components/Theme/DeviceClaimModal';
 import { GlassPanel } from '@/Components/Theme/GlassPanel';
 import { Navbar1 } from '@/Components/Theme/Navbar1';
@@ -38,6 +39,7 @@ export default function AuthenticatedLayout({ children, trigger }: Props) {
                 open={claimOpen}
                 onClose={() => setClaimOpen(false)}
             />
+            <BusyOverlay />
         </StageBackground>
     );
 }

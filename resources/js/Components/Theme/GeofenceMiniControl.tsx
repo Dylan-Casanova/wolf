@@ -1,4 +1,5 @@
 import ScheduleModal from '@/Components/ScheduleModal';
+import { withBusy } from '@/Stores/busyStore';
 import type { Geofence } from '@/types';
 import { router } from '@inertiajs/react';
 import axios from 'axios';
@@ -88,27 +89,29 @@ export function GeofenceMiniControl({ geofence }: Props) {
         if (!navigator.geolocation) return;
         setEnableLoading(true);
         try {
-            const position = await new Promise<GeolocationPosition>(
-                (resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(
-                        resolve,
-                        reject,
-                        { enableHighAccuracy: true, timeout: 10000 },
-                    );
-                },
-            );
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            const response = await axios.post(
-                `/geo-fences/${geofence.id}/estimate`,
-                { lat, lng },
-            );
-            setOrigin({ lat, lng });
-            setEstimate({
-                distance_miles: response.data.distance_miles,
-                estimated_minutes: response.data.estimated_minutes,
+            await withBusy(async () => {
+                const position = await new Promise<GeolocationPosition>(
+                    (resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(
+                            resolve,
+                            reject,
+                            { enableHighAccuracy: true, timeout: 10000 },
+                        );
+                    },
+                );
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const response = await axios.post(
+                    `/geo-fences/${geofence.id}/estimate`,
+                    { lat, lng },
+                );
+                setOrigin({ lat, lng });
+                setEstimate({
+                    distance_miles: response.data.distance_miles,
+                    estimated_minutes: response.data.estimated_minutes,
+                });
+                setScheduleOpen(true);
             });
-            setScheduleOpen(true);
         } catch {
             // surface a flash later
         } finally {
@@ -121,13 +124,12 @@ export function GeofenceMiniControl({ geofence }: Props) {
         setScheduleOpen(false);
         setEnableLoading(true);
         try {
-            await axios.post(
-                `/geo-fences/${geofence.id}/schedule-trigger`,
-                {
+            await withBusy(() =>
+                axios.post(`/geo-fences/${geofence.id}/schedule-trigger`, {
                     minutes,
                     origin_lat: origin.lat,
                     origin_lng: origin.lng,
-                },
+                }),
             );
             router.reload();
         } catch {
