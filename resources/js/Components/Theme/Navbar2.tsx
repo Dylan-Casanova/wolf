@@ -1,42 +1,13 @@
 import type { PageProps } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-
-interface NavItem {
-    label: string;
-    href: string;
-    routeMatch: string[];
-    badge: string;
-    adminOnly?: boolean;
-}
-
-const items: NavItem[] = [
-    {
-        label: 'Dashboard',
-        href: '/dashboard',
-        routeMatch: ['/dashboard'],
-        badge: '⌂',
-    },
-    {
-        label: 'Geofence',
-        href: '/geofence',
-        routeMatch: ['/geofence'],
-        badge: '⊕',
-    },
-    {
-        label: 'Devices',
-        href: '/devices',
-        routeMatch: ['/devices'],
-        badge: '▦',
-        adminOnly: true,
-    },
-];
+import { navItems, type NavItem } from './NavItems';
 
 export function Navbar2() {
     const page = usePage<PageProps>();
     const isAdmin = page.props.auth.user.is_admin;
     const url = page.url;
-    const visibleItems = items.filter((i) => !i.adminOnly || isAdmin);
+    const visibleItems = navItems.filter((i) => !i.adminOnly || isAdmin);
 
     // Optimistic active state: when a Link is clicked, we mark its target as
     // active immediately so the user gets feedback before the page transition

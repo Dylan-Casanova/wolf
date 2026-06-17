@@ -8,7 +8,7 @@ interface Props {
 export function TriggerPanel({ children, label }: Props) {
     return (
         <div className="mt-4">
-            <div className="flex items-center justify-center gap-3.5 rounded-wolf-card border border-wolf-glass-border bg-white/[0.04] p-5">
+            <div className="flex flex-wrap items-center justify-center gap-3 rounded-wolf-card border border-wolf-glass-border bg-white/[0.04] p-4 sm:gap-3.5 sm:p-5">
                 {children}
             </div>
             {label && (
