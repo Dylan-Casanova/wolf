@@ -33,7 +33,7 @@ export default function Dashboard({ devices, geofence }: Props) {
         <AuthenticatedLayout trigger={trigger}>
             <Head title="Dashboard" />
             <div className="overflow-hidden rounded-wolf-card border border-wolf-card-border bg-black/60">
-                <div className="flex h-[260px] w-full overflow-hidden">
+                <div className="flex aspect-video w-full overflow-hidden sm:aspect-[16/8] lg:aspect-auto lg:h-[260px]">
                     <DashboardCamFrame devices={devices} />
                 </div>
                 <GeofenceMiniControl geofence={geofence} />

@@ -1,3 +1,4 @@
+import { BottomTabBar } from '@/Components/Theme/BottomTabBar';
 import { BusyOverlay } from '@/Components/Theme/BusyOverlay';
 import { DeviceClaimModal } from '@/Components/Theme/DeviceClaimModal';
 import { GlassPanel } from '@/Components/Theme/GlassPanel';
@@ -19,15 +20,28 @@ export default function AuthenticatedLayout({ children, trigger }: Props) {
 
     return (
         <StageBackground>
-            <div className="mx-auto flex max-w-7xl gap-7 px-10 py-10">
-                <Navbar1 onClaimClick={() => setClaimOpen(true)} />
-                <GlassPanel className="flex-1 px-8 py-7">
-                    <div className="mb-6 flex items-end justify-between">
+            <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 pb-24 pt-4 lg:flex-row lg:gap-7 lg:px-10 lg:pb-10 lg:pt-10">
+                <div className="flex items-center justify-between gap-3 lg:hidden">
+                    <WolfLogo />
+                    <UserBadge />
+                </div>
+                <div className="lg:hidden">
+                    <Navbar1 onClaimClick={() => setClaimOpen(true)} />
+                </div>
+
+                <div className="hidden lg:block">
+                    <Navbar1 onClaimClick={() => setClaimOpen(true)} />
+                </div>
+
+                <GlassPanel className="flex-1 px-4 py-5 lg:px-8 lg:py-7">
+                    <div className="mb-6 hidden items-end justify-between lg:flex">
                         <WolfLogo />
                         <UserBadge />
                     </div>
                     <div className="flex gap-5">
-                        <Navbar2 />
+                        <div className="hidden lg:block">
+                            <Navbar2 />
+                        </div>
                         <div className="flex flex-1 flex-col gap-3.5">
                             {children}
                         </div>
@@ -35,6 +49,9 @@ export default function AuthenticatedLayout({ children, trigger }: Props) {
                     {trigger}
                 </GlassPanel>
             </div>
+
+            <BottomTabBar />
+
             <DeviceClaimModal
                 open={claimOpen}
                 onClose={() => setClaimOpen(false)}

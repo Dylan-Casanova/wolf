@@ -24,7 +24,7 @@ function IconButton({ onClick, label, children }: IconButtonProps) {
             </button>
             <span
                 aria-hidden
-                className="border-wolf-glass-border bg-wolf-glass backdrop-blur-wolf-rail pointer-events-none absolute left-full top-1/2 z-50 ml-3 -translate-x-1 -translate-y-1/2 whitespace-nowrap rounded-md border px-2.5 py-1 text-xs font-medium text-slate-200 opacity-0 transition-all duration-150 group-hover:translate-x-0 group-hover:opacity-100"
+                className="border-wolf-glass-border bg-wolf-glass backdrop-blur-wolf-rail pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md border px-2.5 py-1 text-xs font-medium text-slate-200 opacity-0 transition-all duration-150 group-hover:translate-y-0 group-hover:opacity-100 lg:left-full lg:top-1/2 lg:ml-3 lg:mt-0 lg:-translate-x-1 lg:-translate-y-1/2"
             >
                 {label}
             </span>
@@ -36,7 +36,7 @@ export function Navbar1({ onClaimClick }: Props) {
     return (
         <GlassPanel
             variant="rail"
-            className="relative z-20 flex flex-col items-center gap-3.5 self-center p-2.5"
+            className="relative z-20 flex flex-row items-center gap-2.5 self-stretch p-2 lg:flex-col lg:gap-3.5 lg:self-center lg:p-2.5"
         >
             <IconButton
                 onClick={() => router.visit('/profile')}

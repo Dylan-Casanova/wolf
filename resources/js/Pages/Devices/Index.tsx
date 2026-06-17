@@ -28,11 +28,68 @@ function formatCentralTime(iso: string | null): string {
 
 const GRID_COLS = 'grid-cols-[2fr_1.4fr_0.9fr_0.8fr_1.4fr_auto]';
 
+function DeviceCard({ device }: { device: Device }) {
+    return (
+        <div className="rounded-wolf-card border border-wolf-card-border bg-black/40 p-4">
+            <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold text-white">
+                        {device.name}
+                    </div>
+                    <div className="mt-0.5 truncate font-mono text-xs text-slate-400">
+                        {device.device_id}
+                    </div>
+                </div>
+                <span
+                    className={`shrink-0 rounded-wolf-pill border px-2 py-0.5 text-[10px] uppercase tracking-wider ${
+                        device.is_online
+                            ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-300'
+                            : 'border-white/10 bg-white/5 text-slate-400'
+                    }`}
+                >
+                    {device.is_online ? 'Online' : 'Offline'}
+                </span>
+            </div>
+            <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                <div>
+                    <dt className="text-slate-500">Type</dt>
+                    <dd className="text-slate-200">{device.type}</dd>
+                </div>
+                <div>
+                    <dt className="text-slate-500">Last seen</dt>
+                    <dd className="text-slate-200">
+                        {formatCentralTime(device.last_seen_at)}
+                    </dd>
+                </div>
+            </dl>
+            <div className="mt-4 flex flex-wrap gap-2">
+                <Link
+                    href={`/devices/${device.id}/edit`}
+                    className="rounded-wolf-pill border border-wolf-card-border bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-white/10"
+                >
+                    Edit
+                </Link>
+            </div>
+        </div>
+    );
+}
+
 export default function Index({ devices }: Props) {
     return (
         <AuthenticatedLayout>
             <Head title="Devices" />
-            <div className="rounded-wolf-card border border-wolf-card-border bg-black/40 p-4">
+            <div className="flex flex-col gap-3 md:hidden">
+                {devices.length === 0 ? (
+                    <div className="rounded-wolf-card border border-wolf-card-border bg-black/40 p-6 text-center text-sm text-slate-400">
+                        No devices in the system yet.
+                    </div>
+                ) : (
+                    devices.map((device) => (
+                        <DeviceCard key={device.id} device={device} />
+                    ))
+                )}
+            </div>
+            <div className="hidden rounded-wolf-card border border-wolf-card-border bg-black/40 p-4 md:block">
                 <div
                     className={`mb-3 grid ${GRID_COLS} gap-3 border-b border-wolf-card-border pb-3 text-[10px] uppercase tracking-[2px] text-slate-400`}
                 >
