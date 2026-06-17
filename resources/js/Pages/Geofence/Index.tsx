@@ -5,6 +5,7 @@ import { GeofenceActionRow } from '@/Components/Theme/GeofenceActionRow';
 import { StatusStrip } from '@/Components/Theme/StatusStrip';
 import { TriggerPanel } from '@/Components/Theme/TriggerPanel';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { withBusy } from '@/Stores/busyStore';
 import type { Geofence } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
@@ -178,29 +179,32 @@ export default function Index({ geofence }: Props) {
 
         setEnableLoading(true);
         try {
-            const position = await new Promise<GeolocationPosition>(
-                (resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject, {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                    });
-                },
-            );
+            await withBusy(async () => {
+                const position = await new Promise<GeolocationPosition>(
+                    (resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(
+                            resolve,
+                            reject,
+                            { enableHighAccuracy: true, timeout: 10000 },
+                        );
+                    },
+                );
 
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
 
-            const response = await axios.post(
-                `/geo-fences/${geofence.id}/estimate`,
-                { lat, lng },
-            );
+                const response = await axios.post(
+                    `/geo-fences/${geofence.id}/estimate`,
+                    { lat, lng },
+                );
 
-            setOrigin({ lat, lng });
-            setEstimate({
-                distance_miles: response.data.distance_miles,
-                estimated_minutes: response.data.estimated_minutes,
+                setOrigin({ lat, lng });
+                setEstimate({
+                    distance_miles: response.data.distance_miles,
+                    estimated_minutes: response.data.estimated_minutes,
+                });
+                setScheduleOpen(true);
             });
-            setScheduleOpen(true);
         } catch {
             setEnableError(
                 'Failed to get your location. Please allow access and try again.',
@@ -215,11 +219,13 @@ export default function Index({ geofence }: Props) {
         setScheduleOpen(false);
         setEnableLoading(true);
         try {
-            await axios.post(`/geo-fences/${geofence.id}/schedule-trigger`, {
-                minutes,
-                origin_lat: origin.lat,
-                origin_lng: origin.lng,
-            });
+            await withBusy(() =>
+                axios.post(`/geo-fences/${geofence.id}/schedule-trigger`, {
+                    minutes,
+                    origin_lat: origin.lat,
+                    origin_lng: origin.lng,
+                }),
+            );
             router.reload();
         } catch {
             setEnableError('Failed to schedule the trigger.');
