@@ -28,5 +28,6 @@ docker run --rm \
 echo "=== Cleaning up ==="
 rm -f /opt/wolf/public/hot
 docker compose exec app php artisan optimize:clear
+docker compose exec app php artisan migrate
 
 echo "=== Deploy complete ==="

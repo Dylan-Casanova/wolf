@@ -2,6 +2,7 @@ import { BottomTabBar } from '@/Components/Theme/BottomTabBar';
 import { BusyOverlay } from '@/Components/Theme/BusyOverlay';
 import { DeviceClaimModal } from '@/Components/Theme/DeviceClaimModal';
 import { GlassPanel } from '@/Components/Theme/GlassPanel';
+import { MobileMenu } from '@/Components/Theme/MobileMenu';
 import { Navbar1 } from '@/Components/Theme/Navbar1';
 import { Navbar2 } from '@/Components/Theme/Navbar2';
 import { StageBackground } from '@/Components/Theme/StageBackground';
@@ -23,10 +24,10 @@ export default function AuthenticatedLayout({ children, trigger }: Props) {
             <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 pb-24 pt-4 lg:flex-row lg:gap-7 lg:px-10 lg:pb-10 lg:pt-10">
                 <div className="flex items-center justify-between gap-3 lg:hidden">
                     <WolfLogo />
-                    <UserBadge />
-                </div>
-                <div className="lg:hidden">
-                    <Navbar1 onClaimClick={() => setClaimOpen(true)} />
+                    <div className="flex items-center gap-3">
+                        <UserBadge />
+                        <MobileMenu onClaimClick={() => setClaimOpen(true)} />
+                    </div>
                 </div>
 
                 <div className="hidden lg:block">

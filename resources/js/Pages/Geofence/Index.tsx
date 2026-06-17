@@ -1,6 +1,7 @@
 import AddressSearch from '@/Components/AddressSearch';
 import GeofenceMap from '@/Components/GeofenceMap';
 import ScheduleModal from '@/Components/ScheduleModal';
+import { DeleteGeofenceModal } from '@/Components/Theme/DeleteGeofenceModal';
 import { GeofenceActionRow } from '@/Components/Theme/GeofenceActionRow';
 import { StatusStrip } from '@/Components/Theme/StatusStrip';
 import { TriggerPanel } from '@/Components/Theme/TriggerPanel';
@@ -60,6 +61,7 @@ export default function Index({ geofence }: Props) {
     );
     const [saving, setSaving] = useState(false);
     const [showMap, setShowMap] = useState(!!geofence);
+    const [deleteOpen, setDeleteOpen] = useState(false);
 
     // Time-based trigger flow (web-only). Native app uses /toggle directly
     // for live-location triggering; web schedules a delayed servo trigger.
@@ -139,9 +141,12 @@ export default function Index({ geofence }: Props) {
         }
     };
 
-    const handleDelete = async () => {
+    const handleDelete = () => setDeleteOpen(true);
+
+    const confirmDelete = async () => {
         if (!geofence) return;
-        await axios.delete(`/geo-fences/${geofence.id}`);
+        setDeleteOpen(false);
+        await withBusy(() => axios.delete(`/geo-fences/${geofence.id}`));
         setShowMap(false);
         setBounds(null);
         setCenter(null);
@@ -256,7 +261,7 @@ export default function Index({ geofence }: Props) {
             <button
                 onClick={handleSave}
                 disabled={saving}
-                className="rounded-wolf-card bg-gradient-to-br from-indigo-500 to-indigo-700 px-9 py-3.5 text-[15px] font-bold tracking-wide text-white shadow-[0_8px_24px_rgba(99,102,241,0.4)] disabled:opacity-50"
+                className="rounded-wolf-pill bg-gradient-to-br from-indigo-500 to-indigo-700 px-3.5 py-2 text-[11px] font-bold tracking-wide text-white shadow-[0_8px_24px_rgba(99,102,241,0.4)] disabled:opacity-50 sm:rounded-wolf-card sm:px-9 sm:py-3.5 sm:text-[15px]"
             >
                 {saving ? 'CREATING…' : 'CREATE PERIMETER'}
             </button>
@@ -271,7 +276,7 @@ export default function Index({ geofence }: Props) {
         <AuthenticatedLayout trigger={trigger}>
             <Head title="Geofence" />
             {!showMap && !geofence ? (
-                <div className="rounded-wolf-card border-wolf-card-border flex flex-col items-center gap-6 border bg-black/40 py-12">
+                <div className="flex flex-col items-center gap-6 rounded-wolf-card border border-wolf-card-border bg-black/40 px-4 py-12">
                     <p className="text-slate-400">
                         No geofence configured. Search for an address to create
                         your perimeter.
@@ -285,7 +290,7 @@ export default function Index({ geofence }: Props) {
                     {!geofence && (
                         <AddressSearch onSelect={handleAddressSelect} />
                     )}
-                    <div className="rounded-wolf-card border-wolf-card-border overflow-hidden border bg-black/40">
+                    <div className="overflow-hidden rounded-wolf-card border border-wolf-card-border bg-black/40">
                         <GeofenceMap
                             geofence={geofence}
                             center={center}
@@ -315,6 +320,12 @@ export default function Index({ geofence }: Props) {
                     onClose={() => setScheduleOpen(false)}
                 />
             )}
+
+            <DeleteGeofenceModal
+                open={deleteOpen}
+                onClose={() => setDeleteOpen(false)}
+                onConfirm={confirmDelete}
+            />
         </AuthenticatedLayout>
     );
 }
