@@ -20,7 +20,7 @@ class GeoFence extends Model
         'west_lng',
         'address_lat',
         'address_lng',
-        'is_active',
+        'live_check_armed',
     ];
 
     protected $casts = [
@@ -30,8 +30,22 @@ class GeoFence extends Model
         'west_lng' => 'float',
         'address_lat' => 'float',
         'address_lng' => 'float',
-        'is_active' => 'boolean',
+        'live_check_armed' => 'boolean',
     ];
+
+    protected $appends = ['is_active'];
+
+    /**
+     * Derived: true when either surface has the fence armed.
+     * - Native arms by toggling `live_check_armed`.
+     * - Web arms by creating a pending ScheduledGeofenceTrigger row.
+     * Splitting prevents one surface from clearing the other's state.
+     */
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->live_check_armed
+            || $this->pendingScheduledTrigger !== null;
+    }
 
     public function user(): BelongsTo
     {

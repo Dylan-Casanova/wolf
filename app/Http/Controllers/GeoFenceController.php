@@ -76,7 +76,7 @@ class GeoFenceController extends Controller
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 
-        $geoFence->update(['is_active' => ! $geoFence->is_active]);
+        $geoFence->update(['live_check_armed' => ! $geoFence->live_check_armed]);
 
         return response()->json(['is_active' => $geoFence->fresh()->is_active]);
     }
@@ -93,7 +93,7 @@ class GeoFenceController extends Controller
         ]);
 
         $distance = $geoFence->distanceFromCenter($validated['lat'], $validated['lng']);
-        $inside = $geoFence->is_active && $geoFence->contains($validated['lat'], $validated['lng']);
+        $inside = $geoFence->live_check_armed && $geoFence->contains($validated['lat'], $validated['lng']);
 
         if ($inside) {
             $esp = $request->user()->devices()->where('type', 'esp8266')->first();
@@ -102,7 +102,7 @@ class GeoFenceController extends Controller
                 $device->triggerServo($esp);
             }
 
-            $geoFence->update(['is_active' => false]);
+            $geoFence->update(['live_check_armed' => false]);
         }
 
         return response()->json([
@@ -168,8 +168,7 @@ class GeoFenceController extends Controller
                 'status' => ScheduledGeofenceTrigger::STATUS_PENDING,
             ]);
 
-            $geoFence->update(['is_active' => true]);
-
+            // No fence write: the pending trigger row alone makes is_active derive true.
             return $trigger;
         });
 
@@ -194,8 +193,8 @@ class GeoFenceController extends Controller
             ->where('status', ScheduledGeofenceTrigger::STATUS_PENDING)
             ->update(['status' => ScheduledGeofenceTrigger::STATUS_CANCELLED]);
 
-        $geoFence->update(['is_active' => false]);
-
-        return response()->json(['fence' => ['is_active' => false]]);
+        // No fence write: accessor derives is_active from live_check_armed OR pending trigger.
+        // Cancelling the trigger alone is enough to flip the derived value off.
+        return response()->json(['fence' => ['is_active' => $geoFence->fresh()->is_active]]);
     }
 }
