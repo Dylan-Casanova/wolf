@@ -21,14 +21,14 @@ class GeoFenceFactory extends Factory
             'south_lat' => $lat - 0.002,
             'east_lng' => $lng + 0.003,
             'west_lng' => $lng - 0.003,
-            'is_active' => false,
+            'live_check_armed' => false,
         ];
     }
 
     public function active(): static
     {
         return $this->state(fn (array $attributes) => [
-            'is_active' => true,
+            'live_check_armed' => true,
         ]);
     }
 }

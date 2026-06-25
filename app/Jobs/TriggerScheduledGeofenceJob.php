@@ -38,6 +38,8 @@ class TriggerScheduledGeofenceJob implements ShouldQueue
             $device->triggerServo($esp);
         }
 
-        $fence->update(['is_active' => false]);
+        // No fence-side write: the atomic claim above already flipped the trigger
+        // row to status=fired. That alone makes the GeoFence is_active accessor
+        // derive to false on its next read.
     }
 }
