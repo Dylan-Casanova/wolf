@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     /*
     | Default speed (mph) used to estimate arrival time for the web's

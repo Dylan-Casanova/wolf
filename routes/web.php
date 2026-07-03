@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\DeviceClaimController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\GarageController;
