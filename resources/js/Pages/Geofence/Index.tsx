@@ -5,9 +5,11 @@ import { DeleteGeofenceModal } from '@/Components/Theme/DeleteGeofenceModal';
 import { GeofenceActionRow } from '@/Components/Theme/GeofenceActionRow';
 import { StatusStrip } from '@/Components/Theme/StatusStrip';
 import { TriggerPanel } from '@/Components/Theme/TriggerPanel';
+import { useScheduledTrigger } from '@/Hooks/useScheduledTrigger';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { withBusy } from '@/Stores/busyStore';
 import type { Geofence } from '@/types';
+import { formatRemaining } from '@/utils/time';
 import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -15,27 +17,6 @@ import { useEffect, useState } from 'react';
 interface Props {
     geofence: Geofence | null;
 }
-
-interface Origin {
-    lat: number;
-    lng: number;
-}
-
-interface Estimate {
-    distance_miles: number;
-    estimated_minutes: number;
-}
-
-const formatRemaining = (ms: number): string => {
-    if (ms <= 0) return '00:00';
-    const total = Math.floor(ms / 1000);
-    const hours = Math.floor(total / 3600);
-    const minutes = Math.floor((total % 3600) / 60);
-    const seconds = total % 60;
-    const mm = String(minutes).padStart(2, '0');
-    const ss = String(seconds).padStart(2, '0');
-    return hours > 0 ? `${hours}:${mm}:${ss}` : `${mm}:${ss}`;
-};
 
 export default function Index({ geofence }: Props) {
     const [center, setCenter] = useState<[number, number] | null>(null);
@@ -63,14 +44,6 @@ export default function Index({ geofence }: Props) {
     const [showMap, setShowMap] = useState(!!geofence);
     const [deleteOpen, setDeleteOpen] = useState(false);
 
-    // Time-based trigger flow (web-only). Native app uses /toggle directly
-    // for live-location triggering; web schedules a delayed servo trigger.
-    const [origin, setOrigin] = useState<Origin | null>(null);
-    const [estimate, setEstimate] = useState<Estimate | null>(null);
-    const [scheduleOpen, setScheduleOpen] = useState(false);
-    const [enableLoading, setEnableLoading] = useState(false);
-    const [enableError, setEnableError] = useState<string | null>(null);
-
     // Show the user's current location on the map as a blue dot. Fetched once
     // on mount; silently does nothing if permission is denied or unavailable.
     const [userPosition, setUserPosition] = useState<[number, number] | null>(
@@ -91,27 +64,20 @@ export default function Index({ geofence }: Props) {
 
     const pendingTrigger = geofence?.pending_scheduled_trigger ?? null;
 
-    // Live countdown for any pending scheduled trigger
-    const [now, setNow] = useState(() => Date.now());
-    useEffect(() => {
-        if (!pendingTrigger) return;
-        const id = setInterval(() => setNow(Date.now()), 1000);
-        return () => clearInterval(id);
-    }, [pendingTrigger]);
-
-    const remainingMs = pendingTrigger
-        ? new Date(pendingTrigger.scheduled_at).getTime() - now
-        : 0;
-
-    // When the countdown hits zero, wait a beat then reload so the server-side
-    // job has time to run and update the geofence's pending_scheduled_trigger
-    // to null (status -> 'fired').
-    useEffect(() => {
-        if (!pendingTrigger) return;
-        if (remainingMs > 0) return;
-        const t = setTimeout(() => router.reload(), 3000);
-        return () => clearTimeout(t);
-    }, [pendingTrigger, remainingMs > 0]); // eslint-disable-line react-hooks/exhaustive-deps
+    // Time-based trigger flow (web-only). Native app uses /toggle directly
+    // for live-location triggering; web schedules a delayed servo trigger.
+    const {
+        remainingMs,
+        enableLabel,
+        enableLoading,
+        enableError,
+        enableVariant,
+        handleEnable,
+        scheduleOpen,
+        estimate,
+        handleScheduleConfirm,
+        closeSchedule,
+    } = useScheduledTrigger(geofence);
 
     const handleAddressSelect = (lat: number, lng: number) => {
         setCenter([lat, lng]);
@@ -154,95 +120,6 @@ export default function Index({ geofence }: Props) {
         router.reload();
     };
 
-    /**
-     * When a pending trigger exists, the enable button becomes a cancel
-     * action. Otherwise it kicks off the schedule flow: get GPS once, ask
-     * the backend to estimate distance and travel time, then open the modal.
-     */
-    const handleEnable = async () => {
-        if (!geofence) return;
-
-        if (pendingTrigger) {
-            // Cancel the scheduled trigger
-            try {
-                await axios.delete(
-                    `/geo-fences/${geofence.id}/scheduled-trigger`,
-                );
-                router.reload();
-            } catch {
-                setEnableError('Failed to cancel the scheduled trigger.');
-            }
-            return;
-        }
-
-        // Start the schedule flow
-        setEnableError(null);
-        if (!navigator.geolocation) {
-            setEnableError('Your browser does not support location services.');
-            return;
-        }
-
-        setEnableLoading(true);
-        try {
-            await withBusy(async () => {
-                const position = await new Promise<GeolocationPosition>(
-                    (resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(
-                            resolve,
-                            reject,
-                            { enableHighAccuracy: true, timeout: 10000 },
-                        );
-                    },
-                );
-
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-
-                const response = await axios.post(
-                    `/geo-fences/${geofence.id}/estimate`,
-                    { lat, lng },
-                );
-
-                setOrigin({ lat, lng });
-                setEstimate({
-                    distance_miles: response.data.distance_miles,
-                    estimated_minutes: response.data.estimated_minutes,
-                });
-                setScheduleOpen(true);
-            });
-        } catch {
-            setEnableError(
-                'Failed to get your location. Please allow access and try again.',
-            );
-        } finally {
-            setEnableLoading(false);
-        }
-    };
-
-    const handleScheduleConfirm = async (minutes: number) => {
-        if (!geofence || !origin) return;
-        setScheduleOpen(false);
-        setEnableLoading(true);
-        try {
-            await withBusy(() =>
-                axios.post(`/geo-fences/${geofence.id}/schedule-trigger`, {
-                    minutes,
-                    origin_lat: origin.lat,
-                    origin_lng: origin.lng,
-                }),
-            );
-            router.reload();
-        } catch {
-            setEnableError('Failed to schedule the trigger.');
-        } finally {
-            setEnableLoading(false);
-        }
-    };
-
-    const enableLabel = pendingTrigger
-        ? `CANCEL · ${formatRemaining(remainingMs)}`
-        : 'ENABLE TRACKING';
-
     const trigger = geofence ? (
         <TriggerPanel label="Geofence Actions">
             <GeofenceActionRow
@@ -251,7 +128,7 @@ export default function Index({ geofence }: Props) {
                 onDelete={handleDelete}
                 enableLabel={enableLabel}
                 enableLoading={enableLoading}
-                enableVariant={pendingTrigger ? 'cancel' : 'primary'}
+                enableVariant={enableVariant}
                 updateDisabled={!bounds}
                 updating={saving}
             />
@@ -317,7 +194,7 @@ export default function Index({ geofence }: Props) {
                     distanceMiles={estimate.distance_miles}
                     estimatedMinutes={estimate.estimated_minutes}
                     onConfirm={handleScheduleConfirm}
-                    onClose={() => setScheduleOpen(false)}
+                    onClose={closeSchedule}
                 />
             )}
 

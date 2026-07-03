@@ -1,58 +1,125 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Wolf
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**A smart garage control system built for a motorcycle rider who wants to open the garage door from the saddle without dismounting.**
 
-## About Laravel
+At its core, Wolf is an end-to-end IoT stack: a Laravel + React web app, a Sanctum-authenticated iOS companion, and an ESP32-based servo controller that all talk to each other via MQTT for commands and Reverb WebSockets for live status. The web app also runs a time-based scheduled trigger flow (schedule a delayed open, watch the countdown, get a broadcast when the servo fires); the iOS app uses OS geofencing for the same effect based on physical location.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+The photo-capture feature was built first as a proof of concept for the entire command pipeline — same MQTT command, same broadcast return path, different physical action (camera vs. servo). Once the pipeline was proven, swapping in the garage servo was a change of payload, not a change of architecture.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Architecture
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+   ┌────────────────────────┐     ┌────────────────────────┐
+   │  Web (Inertia+React)   │     │      iOS app           │
+   │  session-authenticated │     │  Sanctum bearer token  │
+   └───────────┬────────────┘     └───────────┬────────────┘
+               │                              │
+               │   HTTPS  (JSON / Inertia)    │
+               │                              │
+               ▼                              ▼
+   ┌────────────────────────────────────────────────────────┐
+   │                    Laravel 13 backend                  │
+   │                                                        │
+   │  Routes → FormRequests → Policies → Controllers        │
+   │                                     │                  │
+   │                                     ▼                  │
+   │                              Domain Services           │
+   │                                     │                  │
+   │                                     ▼                  │
+   │                       DeviceInterface (Strategy)       │
+   │                                     │                  │
+   │                       ┌─────────────┴────────────┐     │
+   │                       │                          │     │
+   │                       ▼                          ▼     │
+   │                MockDevice                Esp32MqttDevice│
+   │                (local dev)               (production)   │
+   └───────────────────────┬────────────────────┬──────────┘
+                           │                    │
+                           │ MQTT command       │ broadcast
+                           │                    │ (via Reverb)
+                           ▼                    ▼
+                    ┌──────────────┐     ┌──────────────┐
+                    │  Mosquitto   │     │  Reverb WS   │
+                    │  (broker)    │     │              │
+                    └──────┬───────┘     └──────┬───────┘
+                           │                    │
+                           │ MQTT subscribe     │ Echo client
+                           ▼                    │
+                    ┌──────────────┐             │
+                    │  ESP32-CAM   │             │
+                    │  ESP8266     │─────────────┘
+                    │  (servo)     │  HTTPS callback
+                    └──────────────┘  (stream frames, status)
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+**Command flow:** browser or iOS triggers → Laravel validates + authorizes at the boundary → domain service dispatches → MQTT publishes to `wolf/{deviceId}/command` → ESP32 executes → device broadcasts the result back through Reverb → browser sees the update over Echo.
 
-## Contributing
+**Different transports on purpose:** MQTT for commands (low-latency, publish/subscribe, keep-alive) and HTTPS POST for media/frames (bulk binary, per-request auth). LWT (Last Will and Testament) on the MQTT connection gives us free online/offline signalling.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Tech stack
 
-## Code of Conduct
+| Layer | Tech |
+|---|---|
+| Backend | Laravel 13, PHP 8.3 |
+| SPA | React 18 + TypeScript + Inertia.js 2 |
+| Styling | Tailwind 3 + Tailwind Forms |
+| WebSockets | Laravel Reverb + Laravel Echo + pusher-js |
+| Auth | Session (Breeze) for web, Sanctum PATs for mobile |
+| IoT transport | MQTT (`php-mqtt/client`) via self-hosted Mosquitto |
+| Storage | SQLite (local), MySQL (production) |
+| Cache/Queue/Session | Redis (production), `array` / `database` (local) |
+| Maps | Leaflet + react-leaflet |
+| Testing | PHPUnit 12 (feature + unit) |
+| Deployment | Docker Compose (dev + prod), Supervisor, Caddy TLS |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Getting started
 
-## Security Vulnerabilities
+Requires PHP 8.3+, Composer, Node 20.19+ (see `.nvmrc`), and Redis (for local queue/cache if you switch off the defaults).
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+# One-shot setup
+composer install
+cp .env.example .env
+php artisan key:generate
+touch database/database.sqlite
+php artisan migrate
+npm install
+npm run build
+
+# Start the dev stack (Laravel serve + queue worker + Pail logs + Vite)
+composer dev
+```
+
+Then open <http://localhost:8000> and register.
+
+For a step-by-step walkthrough of the mock device driver, event broadcasting, and test flows, see [`docs/HOW-TO-TEST.md`](docs/HOW-TO-TEST.md).
+
+## Testing
+
+```bash
+composer test        # runs the full PHPUnit suite
+```
+
+Or, if you need the finer control:
+
+```bash
+./vendor/bin/phpunit --filter GeoFence
+./vendor/bin/phpunit --testsuite Feature
+```
+
+The test suite runs against `sqlite :memory:` and the `array` cache — no external services required.
+
+## Deployment
+
+Production runs behind Docker Compose with Caddy handling TLS. Full instructions and the `deploy.sh` runbook are in [`docs/deployment.md`](docs/deployment.md).
+
+Key pieces:
+
+- `Dockerfile` builds the app image (PHP-FPM + composer install + npm build)
+- `docker-compose.prod.yml` composes app + Mosquitto + Redis + MySQL + Reverb + Caddy
+- `docs/supervisor/wolf-queue.conf` and `wolf-reverb.conf` keep the queue worker and Reverb server up
+- `.githooks/pre-commit` runs Pint on staged PHP files before every commit
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT.
