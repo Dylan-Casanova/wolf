@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\Device;
+use App\Enums\DeviceClaimResult;
+use App\Services\DeviceClaimService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class DeviceClaimController extends Controller
 {
+    public function __construct(private DeviceClaimService $service) {}
+
     public function create()
     {
         return Inertia::render('Devices/Claim');
@@ -21,22 +24,13 @@ class DeviceClaimController extends Controller
             'device_id' => ['required', 'string'],
         ]);
 
-        $device = Device::where('device_id', $validated['device_id'])->first();
+        $result = $this->service->claim($request->user(), $validated['device_id']);
 
-        if (! $device) {
-            return back()->withErrors(['device_id' => 'Device not found.']);
-        }
-
-        if ($device->user_id === $request->user()->id) {
-            return back()->withErrors(['device_id' => 'You already own this device.']);
-        }
-
-        if ($device->user_id !== null) {
-            return back()->withErrors(['device_id' => 'Device is already claimed.']);
-        }
-
-        $device->update(['user_id' => $request->user()->id]);
-
-        return redirect()->route('dashboard');
+        return match ($result) {
+            DeviceClaimResult::Claimed => redirect()->route('dashboard'),
+            DeviceClaimResult::DeviceNotFound => back()->withErrors(['device_id' => 'Device not found.']),
+            DeviceClaimResult::AlreadyOwned => back()->withErrors(['device_id' => 'You already own this device.']),
+            DeviceClaimResult::AlreadyClaimed => back()->withErrors(['device_id' => 'Device is already claimed.']),
+        };
     }
 }
