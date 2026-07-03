@@ -7,18 +7,20 @@ namespace App\Http\Controllers;
 use App\Enums\DeviceType;
 use App\Http\Requests\StoreDeviceRequest;
 use App\Http\Requests\UpdateDeviceRequest;
+use App\Http\Resources\DeviceResource;
 use App\Models\Device;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class DeviceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $devices = Device::with('user')->latest()->get();
 
         return Inertia::render('Devices/Index', [
-            'devices' => $devices,
+            'devices' => DeviceResource::collection($devices)->resolve($request),
         ]);
     }
 

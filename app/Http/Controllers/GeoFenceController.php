@@ -11,20 +11,22 @@ use App\Http\Requests\GeoFence\EstimateGeoFenceRequest;
 use App\Http\Requests\GeoFence\ScheduleTriggerRequest;
 use App\Http\Requests\GeoFence\StoreGeoFenceRequest;
 use App\Http\Requests\GeoFence\UpdateGeoFenceRequest;
+use App\Http\Resources\GeoFenceResource;
 use App\Jobs\TriggerScheduledGeofenceJob;
 use App\Models\GeoFence;
 use App\Models\ScheduledGeofenceTrigger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 
 class GeoFenceController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
         $geofence = $request->user()->geofence;
 
-        return response()->json($geofence ? [$geofence] : []);
+        return GeoFenceResource::collection($geofence ? [$geofence] : []);
     }
 
     public function store(StoreGeoFenceRequest $request): JsonResponse
@@ -35,14 +37,14 @@ class GeoFenceController extends Controller
 
         $geofence = $request->user()->geofence()->create($request->validated());
 
-        return response()->json($geofence, 201);
+        return GeoFenceResource::make($geofence)->response()->setStatusCode(201);
     }
 
-    public function update(UpdateGeoFenceRequest $request, GeoFence $geoFence): JsonResponse
+    public function update(UpdateGeoFenceRequest $request, GeoFence $geoFence): GeoFenceResource
     {
         $geoFence->update($request->validated());
 
-        return response()->json($geoFence);
+        return GeoFenceResource::make($geoFence);
     }
 
     public function destroy(Request $request, GeoFence $geoFence): JsonResponse
