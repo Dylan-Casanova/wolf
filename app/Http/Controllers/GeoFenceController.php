@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Contracts\DeviceInterface;
+use App\Enums\DeviceType;
 use App\Jobs\TriggerScheduledGeofenceJob;
 use App\Models\GeoFence;
 use App\Models\ScheduledGeofenceTrigger;
@@ -98,7 +99,7 @@ class GeoFenceController extends Controller
         $inside = $geoFence->live_check_armed && $geoFence->contains($validated['lat'], $validated['lng']);
 
         if ($inside) {
-            $esp = $request->user()->devices()->where('type', 'esp8266')->first();
+            $esp = $request->user()->devices()->where('type', DeviceType::Esp8266->value)->first();
 
             if ($esp) {
                 $device->triggerServo($esp);

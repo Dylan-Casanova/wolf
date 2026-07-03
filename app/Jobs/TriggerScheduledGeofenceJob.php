@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Contracts\DeviceInterface;
+use App\Enums\DeviceType;
 use App\Models\ScheduledGeofenceTrigger;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -35,7 +36,7 @@ class TriggerScheduledGeofenceJob implements ShouldQueue
         }
 
         $fence = $trigger->geoFence;
-        $esp = $fence->user->devices()->where('type', 'esp8266')->first();
+        $esp = $fence->user->devices()->where('type', DeviceType::Esp8266->value)->first();
         if ($esp) {
             $device->triggerServo($esp);
         }
