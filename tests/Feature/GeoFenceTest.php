@@ -10,6 +10,7 @@ use App\Models\Device;
 use App\Models\GeoFence;
 use App\Models\ScheduledGeofenceTrigger;
 use App\Models\User;
+use App\Services\GeoFenceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Mockery;
@@ -236,7 +237,7 @@ class GeoFenceTest extends TestCase
         $mock->shouldReceive('triggerServo')->once()->andReturn(true);
         $this->app->instance(DeviceInterface::class, $mock);
 
-        (new TriggerScheduledGeofenceJob($trigger->id))->handle($mock);
+        (new TriggerScheduledGeofenceJob($trigger->id))->handle(new GeoFenceService($mock));
 
         $this->assertEquals('fired', $trigger->fresh()->status);
         $this->assertFalse($fence->fresh()->is_active);
@@ -254,7 +255,7 @@ class GeoFenceTest extends TestCase
         $mock->shouldReceive('triggerServo')->never();
         $this->app->instance(DeviceInterface::class, $mock);
 
-        (new TriggerScheduledGeofenceJob($trigger->id))->handle($mock);
+        (new TriggerScheduledGeofenceJob($trigger->id))->handle(new GeoFenceService($mock));
 
         $this->assertEquals('cancelled', $trigger->fresh()->status);
         $this->assertTrue($fence->fresh()->is_active);
@@ -428,7 +429,7 @@ class GeoFenceTest extends TestCase
         $this->assertEquals('pending', $trigger->fresh()->status);
 
         // Now the scheduled job fires (this is the single allowed fire).
-        (new TriggerScheduledGeofenceJob($trigger->id))->handle($mock);
+        (new TriggerScheduledGeofenceJob($trigger->id))->handle(new GeoFenceService($mock));
         $this->assertEquals('fired', $trigger->fresh()->status);
     }
 
