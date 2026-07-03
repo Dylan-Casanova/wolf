@@ -18,6 +18,7 @@ class DeviceResource extends JsonResource
             'type' => $this->type->value,
             'is_online' => $this->is_online,
             'last_seen_at' => $this->last_seen_at,
+            'meta' => $this->meta,
             'user' => $this->whenLoaded('user'),
         ];
     }

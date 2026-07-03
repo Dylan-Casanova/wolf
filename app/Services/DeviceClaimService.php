@@ -10,24 +10,24 @@ use App\Models\User;
 
 class DeviceClaimService
 {
-    public function claim(User $user, string $deviceId): DeviceClaimResult
+    public function claim(User $user, string $deviceId): DeviceClaimOutcome
     {
         $device = Device::where('device_id', $deviceId)->first();
 
         if (! $device) {
-            return DeviceClaimResult::DeviceNotFound;
+            return new DeviceClaimOutcome(DeviceClaimResult::DeviceNotFound);
         }
 
         if ($device->user_id === $user->id) {
-            return DeviceClaimResult::AlreadyOwned;
+            return new DeviceClaimOutcome(DeviceClaimResult::AlreadyOwned, $device);
         }
 
         if ($device->user_id !== null) {
-            return DeviceClaimResult::AlreadyClaimed;
+            return new DeviceClaimOutcome(DeviceClaimResult::AlreadyClaimed, $device);
         }
 
         $device->update(['user_id' => $user->id]);
 
-        return DeviceClaimResult::Claimed;
+        return new DeviceClaimOutcome(DeviceClaimResult::Claimed, $device->fresh());
     }
 }

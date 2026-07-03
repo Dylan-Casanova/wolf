@@ -40,9 +40,12 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
 
-        // Limit capture triggers to 10 per minute per user
+        // Cap per-user commands to physical hardware. Tunable via
+        // config('wolf.rate_limits.device_capture_per_minute').
         RateLimiter::for('device-capture', function (Request $request) {
-            return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip());
+            $perMinute = (int) config('wolf.rate_limits.device_capture_per_minute');
+
+            return Limit::perMinute($perMinute)->by($request->user()?->id ?: $request->ip());
         });
     }
 }

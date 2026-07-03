@@ -5,11 +5,11 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\DeviceRegisterController;
 use App\Http\Controllers\Api\DeviceStatusController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\DeviceClaimController as ApiDeviceClaimController;
+use App\Http\Controllers\Api\V1\DeviceController as ApiDeviceController;
 use App\Http\Controllers\GarageController;
 use App\Http\Controllers\GeoFenceController;
 use App\Http\Controllers\StreamFeedController;
-use App\Models\Device;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // /api/v1 — Sanctum token-authenticated mobile API
@@ -33,44 +33,9 @@ Route::prefix('v1')->group(function () {
         Route::post('/garage/trigger', [GarageController::class, 'trigger'])
             ->middleware('throttle:device-capture');
 
-        // User's devices (mobile-only — the existing /devices web routes are admin-only resource)
-        Route::get('/devices', function (Request $request) {
-            return response()->json(
-                $request->user()->devices()->get()->map(fn ($d) => [
-                    'id' => $d->id,
-                    'name' => $d->name,
-                    'device_id' => $d->device_id,
-                    'type' => $d->type->value,
-                    'is_online' => $d->is_online,
-                    'last_seen_at' => $d->last_seen_at,
-                    'meta' => $d->meta,
-                ])
-            );
-        });
-
-        Route::post('/devices/claim', function (Request $request) {
-            $validated = $request->validate([
-                'device_id' => ['required', 'string'],
-            ]);
-
-            $device = Device::where('device_id', $validated['device_id'])->first();
-
-            if (! $device) {
-                return response()->json(['message' => 'Device not found.'], 404);
-            }
-
-            if ($device->user_id === $request->user()->id) {
-                return response()->json(['message' => 'You already own this device.'], 422);
-            }
-
-            if ($device->user_id !== null) {
-                return response()->json(['message' => 'Device is already claimed.'], 422);
-            }
-
-            $device->update(['user_id' => $request->user()->id]);
-
-            return response()->json($device);
-        });
+        // User's devices (mobile-only — the /devices web routes are admin CRUD).
+        Route::get('/devices', [ApiDeviceController::class, 'index']);
+        Route::post('/devices/claim', [ApiDeviceClaimController::class, 'store']);
     });
 });
 

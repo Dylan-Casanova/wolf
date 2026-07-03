@@ -24,9 +24,9 @@ class DeviceClaimController extends Controller
             'device_id' => ['required', 'string'],
         ]);
 
-        $result = $this->service->claim($request->user(), $validated['device_id']);
+        $outcome = $this->service->claim($request->user(), $validated['device_id']);
 
-        return match ($result) {
+        return match ($outcome->result) {
             DeviceClaimResult::Claimed => redirect()->route('dashboard'),
             DeviceClaimResult::DeviceNotFound => back()->withErrors(['device_id' => 'Device not found.']),
             DeviceClaimResult::AlreadyOwned => back()->withErrors(['device_id' => 'You already own this device.']),
