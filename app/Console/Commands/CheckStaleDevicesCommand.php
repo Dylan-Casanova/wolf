@@ -27,9 +27,11 @@ class CheckStaleDevicesCommand extends Command
 
     private function cleanStaleDevices(): void
     {
+        $staleAfter = (int) config('wolf.device.stale_after_minutes');
+
         $staleDevices = Device::where('is_online', true)
-            ->where(function ($query) {
-                $query->where('last_seen_at', '<', now()->subMinutes(2))
+            ->where(function ($query) use ($staleAfter) {
+                $query->where('last_seen_at', '<', now()->subMinutes($staleAfter))
                     ->orWhereNull('last_seen_at');
             })
             ->get();
@@ -47,18 +49,7 @@ class CheckStaleDevicesCommand extends Command
 
     private function cleanStaleStreams(): void
     {
-        // End streams that are active for more than 3 minutes or pending for more than 3 minutes
-        $staleStreams = Stream::whereIn('status', [StreamStatus::Active, StreamStatus::Pending])
-            ->where(function ($query) {
-                $query->where(function ($q) {
-                    $q->where('status', StreamStatus::Active)
-                        ->where('started_at', '<', now()->subMinutes(3));
-                })->orWhere(function ($q) {
-                    $q->where('status', StreamStatus::Pending)
-                        ->where('created_at', '<', now()->subMinutes(3));
-                });
-            })
-            ->get();
+        $staleStreams = Stream::stale()->get();
 
         foreach ($staleStreams as $stream) {
             $stream->update(['status' => StreamStatus::Ended, 'ended_at' => now()]);
@@ -70,13 +61,10 @@ class CheckStaleDevicesCommand extends Command
             $this->info('No stale streams found.');
         }
 
-        // Purge ended streams older than 24 hours
-        $deleted = Stream::where('status', StreamStatus::Ended)
-            ->where('ended_at', '<', now()->subHours(24))
-            ->delete();
+        $deleted = Stream::purgeable()->delete();
 
         if ($deleted > 0) {
-            $this->info("Purged {$deleted} ended stream(s) older than 24 hours.");
+            $this->info("Purged {$deleted} ended stream(s).");
         }
     }
 }
