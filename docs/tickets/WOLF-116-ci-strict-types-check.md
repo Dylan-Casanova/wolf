@@ -72,22 +72,23 @@ Three additions:
 
 ## Acceptance criteria
 
-- [ ] `scripts/check-strict-types.sh` exists, is executable, and:
+- [x] `scripts/check-strict-types.sh` exists, is executable, and:
   - Exits `0` when every first-party PHP file has
     `declare(strict_types=1);`.
   - Exits `1` with a readable list of offenders otherwise.
   - Correctly excludes `bootstrap/cache/*.php`.
-- [ ] `composer.json` includes a script alias:
-  `"lint:strict-types": "bash scripts/check-strict-types.sh"`.
-- [ ] `.github/workflows/ci.yml`'s `lint` job runs
+- [x] `composer.json` includes a script alias:
+  `"lint:strict-types": ["bash scripts/check-strict-types.sh"]`.
+- [x] `.github/workflows/ci.yml`'s `lint` job runs
   `composer lint:strict-types` after `./vendor/bin/pint --test`.
-- [ ] On the current master (which has WOLF-103 merged),
+- [x] On the current master (which has WOLF-103 merged),
   `composer lint:strict-types` reports **0 offenders** and exits 0.
-- [ ] Manual regression check: temporarily remove the declaration from
-      one file, run `composer lint:strict-types`, verify exit code 1
-      and clear error output. Restore the file.
-- [ ] Existing CI passes end-to-end after the addition (test + lint +
-      build jobs).
+- [x] Manual regression: mutated `app/Models/User.php` to drop the
+      declaration; `composer lint:strict-types` exited **1** and
+      printed `- app/Models/User.php` as the offender with a
+      reproduce hint. File restored; re-check passes.
+- [ ] Existing CI passes end-to-end after the addition (verify on the
+      PR — cannot verify locally).
 
 ## Out of scope
 

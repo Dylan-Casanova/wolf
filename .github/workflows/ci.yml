@@ -65,6 +65,9 @@ jobs:
       - name: Run Pint
         run: ./vendor/bin/pint --test
 
+      - name: Check declare(strict_types=1) coverage
+        run: composer lint:strict-types
+
   build:
     name: Build
     runs-on: ubuntu-latest
