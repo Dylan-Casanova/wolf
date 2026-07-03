@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Contracts\DeviceInterface;
-use App\Enums\DeviceType;
 use App\Models\ScheduledGeofenceTrigger;
+use App\Services\GeoFenceService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -19,7 +18,7 @@ class TriggerScheduledGeofenceJob implements ShouldQueue
 
     public function __construct(public int $scheduledTriggerId) {}
 
-    public function handle(DeviceInterface $device): void
+    public function handle(GeoFenceService $service): void
     {
         // Atomic claim: only fire if still pending
         $claimed = ScheduledGeofenceTrigger::where('id', $this->scheduledTriggerId)
@@ -30,16 +29,12 @@ class TriggerScheduledGeofenceJob implements ShouldQueue
             return; // cancelled, already fired, or deleted
         }
 
-        $trigger = ScheduledGeofenceTrigger::with('geoFence.user.devices')->find($this->scheduledTriggerId);
-        if (! $trigger || ! $trigger->geoFence) {
+        $trigger = ScheduledGeofenceTrigger::with('geoFence.user')->find($this->scheduledTriggerId);
+        if (! $trigger || ! $trigger->geoFence || ! $trigger->geoFence->user) {
             return;
         }
 
-        $fence = $trigger->geoFence;
-        $esp = $fence->user->devices()->where('type', DeviceType::Esp8266->value)->first();
-        if ($esp) {
-            $device->triggerServo($esp);
-        }
+        $service->triggerServoForUser($trigger->geoFence->user);
 
         // No fence-side write: the atomic claim above already flipped the trigger
         // row to status=fired. That alone makes the GeoFence is_active accessor
