@@ -7,6 +7,7 @@ use App\Http\Controllers\DeviceClaimController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\GarageController;
 use App\Http\Controllers\GeoFenceController;
+use App\Http\Controllers\GeoFencePageController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StreamController;
@@ -20,14 +21,7 @@ Route::get('/health', HealthController::class)->name('health');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
-    Route::get('/geofence', function () {
-        $geofence = auth()->user()->geofence?->load('pendingScheduledTrigger');
-
-        return Inertia::render('Geofence/Index', [
-            'geofence' => $geofence,
-            'server_now' => now()->toIso8601String(),
-        ]);
-    })->name('geofence');
+    Route::get('/geofence', GeoFencePageController::class)->name('geofence');
 
     // Device claiming (POST only — UI lives in the Navbar1 modal)
     Route::post('/devices/claim', [DeviceClaimController::class, 'store']);
