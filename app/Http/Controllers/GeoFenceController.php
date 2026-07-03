@@ -44,9 +44,7 @@ class GeoFenceController extends Controller
 
     public function update(Request $request, GeoFence $geoFence): JsonResponse
     {
-        if ($geoFence->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Forbidden.'], 403);
-        }
+        $this->authorize('update', $geoFence);
 
         $validated = $request->validate([
             'north_lat' => ['required', 'numeric', 'between:-90,90'],
@@ -64,9 +62,7 @@ class GeoFenceController extends Controller
 
     public function destroy(Request $request, GeoFence $geoFence): JsonResponse
     {
-        if ($geoFence->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Forbidden.'], 403);
-        }
+        $this->authorize('delete', $geoFence);
 
         $geoFence->delete();
 
@@ -75,9 +71,7 @@ class GeoFenceController extends Controller
 
     public function toggle(Request $request, GeoFence $geoFence): JsonResponse
     {
-        if ($geoFence->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Forbidden.'], 403);
-        }
+        $this->authorize('update', $geoFence);
 
         $geoFence->update(['live_check_armed' => ! $geoFence->live_check_armed]);
 
@@ -86,9 +80,7 @@ class GeoFenceController extends Controller
 
     public function check(Request $request, GeoFence $geoFence, DeviceInterface $device): JsonResponse
     {
-        if ($geoFence->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Forbidden.'], 403);
-        }
+        $this->authorize('update', $geoFence);
 
         $validated = $request->validate([
             'lat' => ['required', 'numeric', 'between:-90,90'],
@@ -116,9 +108,7 @@ class GeoFenceController extends Controller
 
     public function estimate(Request $request, GeoFence $geoFence): JsonResponse
     {
-        if ($geoFence->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Forbidden.'], 403);
-        }
+        $this->authorize('view', $geoFence);
 
         $validated = $request->validate([
             'lat' => ['required', 'numeric', 'between:-90,90'],
@@ -139,9 +129,7 @@ class GeoFenceController extends Controller
 
     public function scheduleTrigger(Request $request, GeoFence $geoFence): JsonResponse
     {
-        if ($geoFence->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Forbidden.'], 403);
-        }
+        $this->authorize('update', $geoFence);
 
         $validated = $request->validate([
             'minutes' => ['required', 'integer', 'between:1,180'],
@@ -188,9 +176,7 @@ class GeoFenceController extends Controller
 
     public function cancelScheduledTrigger(Request $request, GeoFence $geoFence): JsonResponse
     {
-        if ($geoFence->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Forbidden.'], 403);
-        }
+        $this->authorize('update', $geoFence);
 
         ScheduledGeofenceTrigger::where('geo_fence_id', $geoFence->id)
             ->where('status', ScheduledGeofenceTrigger::STATUS_PENDING)
