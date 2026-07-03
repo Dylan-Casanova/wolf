@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\StreamStatus;
-use App\Events\StreamFrameReceived;
 use App\Models\Stream;
+use App\Services\StreamService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class StreamFeedController extends Controller
 {
-    public function feed(Request $request, Stream $stream)
+    public function __construct(private StreamService $service) {}
+
+    public function feed(Request $request, Stream $stream): JsonResponse
     {
         $token = $request->header('X-Device-Token');
         if (! $token || ! $stream->device || ! $stream->device->verifyToken($token)) {
@@ -20,13 +23,11 @@ class StreamFeedController extends Controller
 
         abort_if($stream->status === StreamStatus::Ended, 409, 'Stream already ended.');
 
-        if ($stream->status === StreamStatus::Pending) {
-            $stream->update(['status' => StreamStatus::Active, 'started_at' => now()]);
-        }
+        $this->service->markActiveIfPending($stream);
 
         $frame = $request->getContent();
         if (strlen($frame) > 0) {
-            broadcast(new StreamFrameReceived($stream->id, base64_encode($frame)));
+            $this->service->broadcastFrame($stream, $frame);
         }
 
         return response()->json(['ok' => true]);
