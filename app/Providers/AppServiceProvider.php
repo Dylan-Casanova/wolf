@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(DeviceInterface::class, function () {
             return match (config('device.driver')) {
-                'mqtt', 'esp32_mqtt' => new Esp32MqttDevice(
+                'esp32_mqtt' => new Esp32MqttDevice(
                     host: config('device.mqtt.host'),
                     port: config('device.mqtt.port'),
                     username: config('device.mqtt.username'),
