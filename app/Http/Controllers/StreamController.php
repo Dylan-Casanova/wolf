@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Contracts\DeviceInterface;
+use App\Enums\StreamStatus;
 use App\Events\StreamEnded;
 use App\Models\Stream;
 use Illuminate\Http\Request;
@@ -28,7 +29,7 @@ class StreamController extends Controller
         $stream = Stream::create([
             'device_id' => $device->id,
             'user_id' => $user->id,
-            'status' => 'pending',
+            'status' => StreamStatus::Pending,
         ]);
 
         $this->device->startStream($device, $stream->id);
@@ -41,14 +42,14 @@ class StreamController extends Controller
      */
     public function stop(Request $request, Stream $stream)
     {
-        if ($stream->status === 'ended') {
+        if ($stream->status === StreamStatus::Ended) {
             return response()->json(['message' => 'Stream already ended.']);
         }
 
         $this->device->stopStream($stream->device);
 
         $stream->update([
-            'status' => 'ended',
+            'status' => StreamStatus::Ended,
             'ended_at' => now(),
         ]);
 

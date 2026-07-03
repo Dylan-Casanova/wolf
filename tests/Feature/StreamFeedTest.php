@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\StreamStatus;
 use App\Events\StreamFrameReceived;
 use App\Models\Device;
 use App\Models\Stream;
@@ -92,7 +93,7 @@ class StreamFeedTest extends TestCase
             'CONTENT_TYPE' => 'image/jpeg',
         ], 'jpeg-data');
 
-        $this->assertEquals('active', $stream->fresh()->status);
+        $this->assertEquals(StreamStatus::Active, $stream->fresh()->status);
         $this->assertNotNull($stream->fresh()->started_at);
     }
 
