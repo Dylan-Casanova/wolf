@@ -6,6 +6,11 @@ namespace App\Http\Controllers;
 
 use App\Contracts\DeviceInterface;
 use App\Enums\DeviceType;
+use App\Http\Requests\GeoFence\CheckGeoFenceRequest;
+use App\Http\Requests\GeoFence\EstimateGeoFenceRequest;
+use App\Http\Requests\GeoFence\ScheduleTriggerRequest;
+use App\Http\Requests\GeoFence\StoreGeoFenceRequest;
+use App\Http\Requests\GeoFence\UpdateGeoFenceRequest;
 use App\Jobs\TriggerScheduledGeofenceJob;
 use App\Models\GeoFence;
 use App\Models\ScheduledGeofenceTrigger;
@@ -22,40 +27,20 @@ class GeoFenceController extends Controller
         return response()->json($geofence ? [$geofence] : []);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreGeoFenceRequest $request): JsonResponse
     {
         if ($request->user()->geofence) {
             return response()->json(['message' => 'Geofence already exists.'], 409);
         }
 
-        $validated = $request->validate([
-            'north_lat' => ['required', 'numeric', 'between:-90,90'],
-            'south_lat' => ['required', 'numeric', 'between:-90,90'],
-            'east_lng' => ['required', 'numeric', 'between:-180,180'],
-            'west_lng' => ['required', 'numeric', 'between:-180,180'],
-            'address_lat' => ['nullable', 'numeric', 'between:-90,90'],
-            'address_lng' => ['nullable', 'numeric', 'between:-180,180'],
-        ]);
-
-        $geofence = $request->user()->geofence()->create($validated);
+        $geofence = $request->user()->geofence()->create($request->validated());
 
         return response()->json($geofence, 201);
     }
 
-    public function update(Request $request, GeoFence $geoFence): JsonResponse
+    public function update(UpdateGeoFenceRequest $request, GeoFence $geoFence): JsonResponse
     {
-        $this->authorize('update', $geoFence);
-
-        $validated = $request->validate([
-            'north_lat' => ['required', 'numeric', 'between:-90,90'],
-            'south_lat' => ['required', 'numeric', 'between:-90,90'],
-            'east_lng' => ['required', 'numeric', 'between:-180,180'],
-            'west_lng' => ['required', 'numeric', 'between:-180,180'],
-            'address_lat' => ['nullable', 'numeric', 'between:-90,90'],
-            'address_lng' => ['nullable', 'numeric', 'between:-180,180'],
-        ]);
-
-        $geoFence->update($validated);
+        $geoFence->update($request->validated());
 
         return response()->json($geoFence);
     }
@@ -78,14 +63,9 @@ class GeoFenceController extends Controller
         return response()->json(['is_active' => $geoFence->fresh()->is_active]);
     }
 
-    public function check(Request $request, GeoFence $geoFence, DeviceInterface $device): JsonResponse
+    public function check(CheckGeoFenceRequest $request, GeoFence $geoFence, DeviceInterface $device): JsonResponse
     {
-        $this->authorize('update', $geoFence);
-
-        $validated = $request->validate([
-            'lat' => ['required', 'numeric', 'between:-90,90'],
-            'lng' => ['required', 'numeric', 'between:-180,180'],
-        ]);
+        $validated = $request->validated();
 
         $distance = $geoFence->distanceFromCenter($validated['lat'], $validated['lng']);
         $inside = $geoFence->live_check_armed && $geoFence->contains($validated['lat'], $validated['lng']);
@@ -106,14 +86,9 @@ class GeoFenceController extends Controller
         ]);
     }
 
-    public function estimate(Request $request, GeoFence $geoFence): JsonResponse
+    public function estimate(EstimateGeoFenceRequest $request, GeoFence $geoFence): JsonResponse
     {
-        $this->authorize('view', $geoFence);
-
-        $validated = $request->validate([
-            'lat' => ['required', 'numeric', 'between:-90,90'],
-            'lng' => ['required', 'numeric', 'between:-180,180'],
-        ]);
+        $validated = $request->validated();
 
         $distanceMeters = $geoFence->distanceFromCenter($validated['lat'], $validated['lng']);
         $distanceMiles = $distanceMeters / 1609.34;
@@ -127,15 +102,9 @@ class GeoFenceController extends Controller
         ]);
     }
 
-    public function scheduleTrigger(Request $request, GeoFence $geoFence): JsonResponse
+    public function scheduleTrigger(ScheduleTriggerRequest $request, GeoFence $geoFence): JsonResponse
     {
-        $this->authorize('update', $geoFence);
-
-        $validated = $request->validate([
-            'minutes' => ['required', 'integer', 'between:1,180'],
-            'origin_lat' => ['required', 'numeric', 'between:-90,90'],
-            'origin_lng' => ['required', 'numeric', 'between:-180,180'],
-        ]);
+        $validated = $request->validated();
 
         // Serialize cancel + create per fence with a row lock so concurrent
         // requests can't create two pending triggers for the same fence.
