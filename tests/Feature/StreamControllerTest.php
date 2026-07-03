@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Contracts\DeviceInterface;
+use App\Enums\StreamStatus;
 use App\Events\StreamEnded;
 use App\Models\Device;
 use App\Models\Stream;
@@ -70,7 +71,7 @@ class StreamControllerTest extends TestCase
         $response = $this->actingAs($user)->postJson("/stream/{$stream->id}/stop");
 
         $response->assertOk();
-        $this->assertEquals('ended', $stream->fresh()->status);
+        $this->assertEquals(StreamStatus::Ended, $stream->fresh()->status);
         $this->assertNotNull($stream->fresh()->ended_at);
     }
 

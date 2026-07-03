@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Enums\StreamStatus;
 use App\Events\DeviceStatusChanged;
 use App\Events\StreamEnded;
 use App\Models\Device;
@@ -47,20 +48,20 @@ class CheckStaleDevicesCommand extends Command
     private function cleanStaleStreams(): void
     {
         // End streams that are active for more than 3 minutes or pending for more than 3 minutes
-        $staleStreams = Stream::whereIn('status', ['active', 'pending'])
+        $staleStreams = Stream::whereIn('status', [StreamStatus::Active, StreamStatus::Pending])
             ->where(function ($query) {
                 $query->where(function ($q) {
-                    $q->where('status', 'active')
+                    $q->where('status', StreamStatus::Active)
                         ->where('started_at', '<', now()->subMinutes(3));
                 })->orWhere(function ($q) {
-                    $q->where('status', 'pending')
+                    $q->where('status', StreamStatus::Pending)
                         ->where('created_at', '<', now()->subMinutes(3));
                 });
             })
             ->get();
 
         foreach ($staleStreams as $stream) {
-            $stream->update(['status' => 'ended', 'ended_at' => now()]);
+            $stream->update(['status' => StreamStatus::Ended, 'ended_at' => now()]);
             broadcast(new StreamEnded($stream->id, 'stale'));
             $this->info("Ended stale stream #{$stream->id}.");
         }
@@ -70,7 +71,7 @@ class CheckStaleDevicesCommand extends Command
         }
 
         // Purge ended streams older than 24 hours
-        $deleted = Stream::where('status', 'ended')
+        $deleted = Stream::where('status', StreamStatus::Ended)
             ->where('ended_at', '<', now()->subHours(24))
             ->delete();
 

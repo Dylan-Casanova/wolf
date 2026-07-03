@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\StreamStatus;
 use App\Events\StreamEnded;
 use App\Models\Stream;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,9 +31,9 @@ class StaleStreamCleanupTest extends TestCase
 
         $this->artisan('devices:check-stale')->assertSuccessful();
 
-        $this->assertEquals('ended', $stale->fresh()->status);
+        $this->assertEquals(StreamStatus::Ended, $stale->fresh()->status);
         $this->assertNotNull($stale->fresh()->ended_at);
-        $this->assertEquals('active', $fresh->fresh()->status);
+        $this->assertEquals(StreamStatus::Active, $fresh->fresh()->status);
     }
 
     #[Test]
@@ -45,7 +46,7 @@ class StaleStreamCleanupTest extends TestCase
 
         $this->artisan('devices:check-stale')->assertSuccessful();
 
-        $this->assertEquals('ended', $stale->fresh()->status);
+        $this->assertEquals(StreamStatus::Ended, $stale->fresh()->status);
     }
 
     #[Test]

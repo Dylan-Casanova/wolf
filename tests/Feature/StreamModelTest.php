@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\StreamStatus;
 use App\Models\Device;
 use App\Models\Stream;
 use App\Models\User;
@@ -35,12 +36,12 @@ class StreamModelTest extends TestCase
     public function stream_has_correct_statuses(): void
     {
         $stream = Stream::factory()->create(['status' => 'pending']);
-        $this->assertEquals('pending', $stream->status);
+        $this->assertEquals(StreamStatus::Pending, $stream->status);
 
         $stream->update(['status' => 'active', 'started_at' => now()]);
-        $this->assertEquals('active', $stream->fresh()->status);
+        $this->assertEquals(StreamStatus::Active, $stream->fresh()->status);
 
         $stream->update(['status' => 'ended', 'ended_at' => now()]);
-        $this->assertEquals('ended', $stream->fresh()->status);
+        $this->assertEquals(StreamStatus::Ended, $stream->fresh()->status);
     }
 }

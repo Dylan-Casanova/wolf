@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\StreamStatus;
 use App\Events\StreamFrameReceived;
 use App\Models\Stream;
 use Illuminate\Http\Request;
@@ -17,10 +18,10 @@ class StreamFeedController extends Controller
             abort(401, 'Invalid device token.');
         }
 
-        abort_if($stream->status === 'ended', 409, 'Stream already ended.');
+        abort_if($stream->status === StreamStatus::Ended, 409, 'Stream already ended.');
 
-        if ($stream->status === 'pending') {
-            $stream->update(['status' => 'active', 'started_at' => now()]);
+        if ($stream->status === StreamStatus::Pending) {
+            $stream->update(['status' => StreamStatus::Active, 'started_at' => now()]);
         }
 
         $frame = $request->getContent();
