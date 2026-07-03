@@ -43,7 +43,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/garage/trigger', [GarageController::class, 'trigger']);
 
     // Geofence API (session-authenticated)
-    Route::apiResource('geo-fences', GeoFenceController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::apiResource('geo-fences', GeoFenceController::class)
+        ->parameters(['geo-fences' => 'geoFence'])
+        ->only(['index', 'store', 'update', 'destroy']);
     Route::post('geo-fences/{geoFence}/check', [GeoFenceController::class, 'check']);
     Route::post('geo-fences/{geoFence}/toggle', [GeoFenceController::class, 'toggle']);
     Route::post('geo-fences/{geoFence}/estimate', [GeoFenceController::class, 'estimate']);
