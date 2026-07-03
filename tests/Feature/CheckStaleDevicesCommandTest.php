@@ -8,13 +8,15 @@ use App\Events\DeviceStatusChanged;
 use App\Models\Device;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CheckStaleDevicesCommandTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_marks_stale_devices_offline(): void
+    #[Test]
+    public function marks_stale_devices_offline(): void
     {
         Event::fake([DeviceStatusChanged::class]);
 
@@ -36,7 +38,8 @@ class CheckStaleDevicesCommandTest extends TestCase
         Event::assertDispatched(DeviceStatusChanged::class, 1);
     }
 
-    public function test_ignores_already_offline_devices(): void
+    #[Test]
+    public function ignores_already_offline_devices(): void
     {
         Event::fake([DeviceStatusChanged::class]);
 
@@ -50,7 +53,8 @@ class CheckStaleDevicesCommandTest extends TestCase
         Event::assertNotDispatched(DeviceStatusChanged::class);
     }
 
-    public function test_marks_online_devices_with_null_last_seen_as_stale(): void
+    #[Test]
+    public function marks_online_devices_with_null_last_seen_as_stale(): void
     {
         Event::fake([DeviceStatusChanged::class]);
 

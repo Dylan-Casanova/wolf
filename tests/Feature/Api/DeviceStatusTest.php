@@ -6,13 +6,15 @@ namespace Tests\Feature\Api;
 
 use App\Models\Device;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class DeviceStatusTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_unclaimed_device_returns_paired_false(): void
+    #[Test]
+    public function unclaimed_device_returns_paired_false(): void
     {
         $device = Device::factory()->unclaimed()->create();
         $token = $device->generateToken();
@@ -25,7 +27,8 @@ class DeviceStatusTest extends TestCase
             ->assertJson(['paired' => false]);
     }
 
-    public function test_claimed_device_returns_paired_true_with_mqtt_config(): void
+    #[Test]
+    public function claimed_device_returns_paired_true_with_mqtt_config(): void
     {
         $device = Device::factory()->create();
         $token = $device->generateToken();
@@ -39,7 +42,8 @@ class DeviceStatusTest extends TestCase
             ->assertJsonStructure(['paired', 'mqtt_host', 'mqtt_port']);
     }
 
-    public function test_status_updates_last_seen_at(): void
+    #[Test]
+    public function status_updates_last_seen_at(): void
     {
         $device = Device::factory()->unclaimed()->create(['last_seen_at' => null]);
         $token = $device->generateToken();
@@ -51,7 +55,8 @@ class DeviceStatusTest extends TestCase
         $this->assertNotNull($device->fresh()->last_seen_at);
     }
 
-    public function test_status_rejects_invalid_token(): void
+    #[Test]
+    public function status_rejects_invalid_token(): void
     {
         $device = Device::factory()->unclaimed()->create();
         $device->generateToken();
@@ -63,7 +68,8 @@ class DeviceStatusTest extends TestCase
         $response->assertUnauthorized();
     }
 
-    public function test_status_rejects_missing_token(): void
+    #[Test]
+    public function status_rejects_missing_token(): void
     {
         $device = Device::factory()->unclaimed()->create();
 
@@ -72,7 +78,8 @@ class DeviceStatusTest extends TestCase
         $response->assertUnauthorized();
     }
 
-    public function test_status_returns_404_for_unknown_device(): void
+    #[Test]
+    public function status_returns_404_for_unknown_device(): void
     {
         $response = $this->getJson('/api/device/NONEXISTENT/status', [
             'Authorization' => 'Bearer some-token',

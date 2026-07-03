@@ -7,13 +7,15 @@ namespace Tests\Feature\Api\V1;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_login_returns_token_and_user_on_valid_credentials(): void
+    #[Test]
+    public function login_returns_token_and_user_on_valid_credentials(): void
     {
         $user = User::factory()->create([
             'email' => 'rider@example.com',
@@ -36,7 +38,8 @@ class AuthTest extends TestCase
         ]);
     }
 
-    public function test_login_rejects_wrong_password(): void
+    #[Test]
+    public function login_rejects_wrong_password(): void
     {
         User::factory()->create([
             'email' => 'rider@example.com',
@@ -53,7 +56,8 @@ class AuthTest extends TestCase
         $response->assertJsonValidationErrors('email');
     }
 
-    public function test_login_rejects_nonexistent_email(): void
+    #[Test]
+    public function login_rejects_nonexistent_email(): void
     {
         $response = $this->postJson('/api/v1/auth/login', [
             'email' => 'nobody@example.com',
@@ -64,7 +68,8 @@ class AuthTest extends TestCase
         $response->assertStatus(422);
     }
 
-    public function test_login_requires_device_name(): void
+    #[Test]
+    public function login_requires_device_name(): void
     {
         User::factory()->create(['email' => 'rider@example.com']);
 
@@ -77,7 +82,8 @@ class AuthTest extends TestCase
         $response->assertJsonValidationErrors('device_name');
     }
 
-    public function test_register_creates_user_and_returns_token(): void
+    #[Test]
+    public function register_creates_user_and_returns_token(): void
     {
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'Dylan',
@@ -94,7 +100,8 @@ class AuthTest extends TestCase
         $this->assertNotEmpty($response->json('token'));
     }
 
-    public function test_register_rejects_duplicate_email(): void
+    #[Test]
+    public function register_rejects_duplicate_email(): void
     {
         User::factory()->create(['email' => 'taken@example.com']);
 
@@ -110,7 +117,8 @@ class AuthTest extends TestCase
         $response->assertJsonValidationErrors('email');
     }
 
-    public function test_register_requires_password_confirmation(): void
+    #[Test]
+    public function register_requires_password_confirmation(): void
     {
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'Dylan',
@@ -124,7 +132,8 @@ class AuthTest extends TestCase
         $response->assertJsonValidationErrors('password');
     }
 
-    public function test_register_rejects_short_password(): void
+    #[Test]
+    public function register_rejects_short_password(): void
     {
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'Dylan',
@@ -138,7 +147,8 @@ class AuthTest extends TestCase
         $response->assertJsonValidationErrors('password');
     }
 
-    public function test_logout_revokes_current_token(): void
+    #[Test]
+    public function logout_revokes_current_token(): void
     {
         $user = User::factory()->create();
         $token = $user->createToken('phone')->plainTextToken;
@@ -150,13 +160,15 @@ class AuthTest extends TestCase
         $this->assertDatabaseCount('personal_access_tokens', 0);
     }
 
-    public function test_logout_requires_authentication(): void
+    #[Test]
+    public function logout_requires_authentication(): void
     {
         $response = $this->postJson('/api/v1/auth/logout');
         $response->assertStatus(401);
     }
 
-    public function test_user_endpoint_returns_authenticated_user(): void
+    #[Test]
+    public function user_endpoint_returns_authenticated_user(): void
     {
         $user = User::factory()->create();
         $token = $user->createToken('phone')->plainTextToken;
@@ -168,13 +180,15 @@ class AuthTest extends TestCase
         $response->assertJson(['id' => $user->id, 'email' => $user->email]);
     }
 
-    public function test_user_endpoint_requires_authentication(): void
+    #[Test]
+    public function user_endpoint_requires_authentication(): void
     {
         $response = $this->getJson('/api/v1/auth/user');
         $response->assertStatus(401);
     }
 
-    public function test_token_grants_access_to_existing_geofence_endpoint(): void
+    #[Test]
+    public function token_grants_access_to_existing_geofence_endpoint(): void
     {
         $user = User::factory()->create();
         $token = $user->createToken('phone')->plainTextToken;

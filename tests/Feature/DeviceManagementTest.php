@@ -7,13 +7,15 @@ namespace Tests\Feature;
 use App\Models\Device;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class DeviceManagementTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_non_admin_cannot_access_devices_index(): void
+    #[Test]
+    public function non_admin_cannot_access_devices_index(): void
     {
         $user = User::factory()->create();
 
@@ -22,7 +24,8 @@ class DeviceManagementTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function test_admin_can_access_devices_index(): void
+    #[Test]
+    public function admin_can_access_devices_index(): void
     {
         $admin = User::factory()->admin()->create();
 
@@ -31,7 +34,8 @@ class DeviceManagementTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_admin_can_create_device(): void
+    #[Test]
+    public function admin_can_create_device(): void
     {
         $admin = User::factory()->admin()->create();
         $user = User::factory()->create();
@@ -52,7 +56,8 @@ class DeviceManagementTest extends TestCase
         ]);
     }
 
-    public function test_user_can_have_multiple_devices(): void
+    #[Test]
+    public function user_can_have_multiple_devices(): void
     {
         $admin = User::factory()->admin()->create();
         $user = User::factory()->create();
@@ -69,7 +74,8 @@ class DeviceManagementTest extends TestCase
         $this->assertEquals(2, Device::where('user_id', $user->id)->count());
     }
 
-    public function test_admin_can_update_device(): void
+    #[Test]
+    public function admin_can_update_device(): void
     {
         $admin = User::factory()->admin()->create();
         $user = User::factory()->create();
@@ -86,7 +92,8 @@ class DeviceManagementTest extends TestCase
         $this->assertDatabaseHas('devices', ['name' => 'Updated Name']);
     }
 
-    public function test_admin_can_delete_device(): void
+    #[Test]
+    public function admin_can_delete_device(): void
     {
         $admin = User::factory()->admin()->create();
         $device = Device::factory()->create();
@@ -97,7 +104,8 @@ class DeviceManagementTest extends TestCase
         $this->assertDatabaseMissing('devices', ['id' => $device->id]);
     }
 
-    public function test_admin_can_regenerate_device_token(): void
+    #[Test]
+    public function admin_can_regenerate_device_token(): void
     {
         $admin = User::factory()->admin()->create();
         $device = Device::factory()->create();
@@ -110,7 +118,8 @@ class DeviceManagementTest extends TestCase
         $this->assertNotEquals($oldHash, $device->fresh()->token_hash);
     }
 
-    public function test_device_id_must_be_unique(): void
+    #[Test]
+    public function device_id_must_be_unique(): void
     {
         $admin = User::factory()->admin()->create();
         $user1 = User::factory()->create();

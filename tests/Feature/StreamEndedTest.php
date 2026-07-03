@@ -7,11 +7,13 @@ namespace Tests\Feature;
 use App\Events\StreamEnded;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class StreamEndedTest extends TestCase
 {
-    public function test_event_broadcasts_on_correct_channel(): void
+    #[Test]
+    public function event_broadcasts_on_correct_channel(): void
     {
         Event::fake([StreamEnded::class]);
 
@@ -26,7 +28,8 @@ class StreamEndedTest extends TestCase
         });
     }
 
-    public function test_payload_contains_reason(): void
+    #[Test]
+    public function payload_contains_reason(): void
     {
         Event::fake([StreamEnded::class]);
 
@@ -41,14 +44,16 @@ class StreamEndedTest extends TestCase
         });
     }
 
-    public function test_broadcast_name_is_correct(): void
+    #[Test]
+    public function broadcast_name_is_correct(): void
     {
         $event = new StreamEnded(1, 'stale');
 
         $this->assertEquals('StreamEnded', $event->broadcastAs());
     }
 
-    public function test_event_implements_should_broadcast_now(): void
+    #[Test]
+    public function event_implements_should_broadcast_now(): void
     {
         $event = new StreamEnded(1, 'stopped');
 

@@ -9,13 +9,15 @@ use App\Events\DeviceStatusChanged;
 use App\Models\Device;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class MqttListenCommandTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_handle_status_online_marks_device_online(): void
+    #[Test]
+    public function handle_status_online_marks_device_online(): void
     {
         Event::fake([DeviceStatusChanged::class]);
 
@@ -34,7 +36,8 @@ class MqttListenCommandTest extends TestCase
         Event::assertDispatched(DeviceStatusChanged::class);
     }
 
-    public function test_handle_status_offline_marks_device_offline(): void
+    #[Test]
+    public function handle_status_offline_marks_device_offline(): void
     {
         Event::fake([DeviceStatusChanged::class]);
 
@@ -53,7 +56,8 @@ class MqttListenCommandTest extends TestCase
         Event::assertDispatched(DeviceStatusChanged::class);
     }
 
-    public function test_handle_heartbeat_updates_meta_and_last_seen(): void
+    #[Test]
+    public function handle_heartbeat_updates_meta_and_last_seen(): void
     {
         Event::fake([DeviceStatusChanged::class]);
 
@@ -75,7 +79,8 @@ class MqttListenCommandTest extends TestCase
         Event::assertDispatched(DeviceStatusChanged::class);
     }
 
-    public function test_unknown_device_id_is_ignored(): void
+    #[Test]
+    public function unknown_device_id_is_ignored(): void
     {
         Event::fake([DeviceStatusChanged::class]);
 

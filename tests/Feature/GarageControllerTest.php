@@ -9,13 +9,15 @@ use App\Models\Device;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class GarageControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_authenticated_user_with_device_can_trigger(): void
+    #[Test]
+    public function authenticated_user_with_device_can_trigger(): void
     {
         $user = User::factory()->create();
         $device = Device::factory()->create(['user_id' => $user->id]);
@@ -33,7 +35,8 @@ class GarageControllerTest extends TestCase
         $response->assertJson(['message' => 'Command sent.']);
     }
 
-    public function test_user_without_device_gets_422(): void
+    #[Test]
+    public function user_without_device_gets_422(): void
     {
         $user = User::factory()->create();
 
@@ -42,7 +45,8 @@ class GarageControllerTest extends TestCase
         $response->assertStatus(422);
     }
 
-    public function test_unauthenticated_gets_redirect(): void
+    #[Test]
+    public function unauthenticated_gets_redirect(): void
     {
         $response = $this->post('/garage/trigger');
 

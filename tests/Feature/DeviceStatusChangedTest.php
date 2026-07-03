@@ -10,13 +10,15 @@ use App\Models\User;
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class DeviceStatusChangedTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_event_broadcasts_on_devices_channel(): void
+    #[Test]
+    public function event_broadcasts_on_devices_channel(): void
     {
         Event::fake([DeviceStatusChanged::class]);
 
@@ -39,7 +41,8 @@ class DeviceStatusChangedTest extends TestCase
         });
     }
 
-    public function test_admin_can_access_devices_channel(): void
+    #[Test]
+    public function admin_can_access_devices_channel(): void
     {
         $admin = User::factory()->admin()->create();
 

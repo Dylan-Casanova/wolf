@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace Tests\Feature\Api;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class DeviceRegisterTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_device_can_self_register(): void
+    #[Test]
+    public function device_can_self_register(): void
     {
         $response = $this->postJson('/api/device/register', [
             'device_id' => 'ESP8266-001',
@@ -30,7 +32,8 @@ class DeviceRegisterTest extends TestCase
         ]);
     }
 
-    public function test_duplicate_registration_returns_existing_token(): void
+    #[Test]
+    public function duplicate_registration_returns_existing_token(): void
     {
         $response1 = $this->postJson('/api/device/register', [
             'device_id' => 'ESP8266-001',
@@ -53,7 +56,8 @@ class DeviceRegisterTest extends TestCase
         $this->assertDatabaseCount('devices', 1);
     }
 
-    public function test_registration_validates_device_id_format(): void
+    #[Test]
+    public function registration_validates_device_id_format(): void
     {
         $response = $this->postJson('/api/device/register', [
             'device_id' => 'invalid-format',
@@ -65,7 +69,8 @@ class DeviceRegisterTest extends TestCase
             ->assertJsonValidationErrors('device_id');
     }
 
-    public function test_registration_requires_all_fields(): void
+    #[Test]
+    public function registration_requires_all_fields(): void
     {
         $response = $this->postJson('/api/device/register', []);
 
@@ -73,7 +78,8 @@ class DeviceRegisterTest extends TestCase
             ->assertJsonValidationErrors(['device_id', 'type', 'name']);
     }
 
-    public function test_registration_validates_device_type(): void
+    #[Test]
+    public function registration_validates_device_type(): void
     {
         $response = $this->postJson('/api/device/register', [
             'device_id' => 'ESP8266-001',
@@ -85,7 +91,8 @@ class DeviceRegisterTest extends TestCase
             ->assertJsonValidationErrors('type');
     }
 
-    public function test_registration_is_rate_limited(): void
+    #[Test]
+    public function registration_is_rate_limited(): void
     {
         for ($i = 0; $i < 11; $i++) {
             $response = $this->postJson('/api/device/register', [

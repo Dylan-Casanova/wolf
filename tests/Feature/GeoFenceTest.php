@@ -13,13 +13,15 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Mockery;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class GeoFenceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_can_create_geofence(): void
+    #[Test]
+    public function user_can_create_geofence(): void
     {
         $user = User::factory()->create();
 
@@ -34,7 +36,8 @@ class GeoFenceTest extends TestCase
         $this->assertDatabaseHas('geo_fences', ['user_id' => $user->id]);
     }
 
-    public function test_user_cannot_create_second_geofence(): void
+    #[Test]
+    public function user_cannot_create_second_geofence(): void
     {
         $user = User::factory()->create();
         GeoFence::factory()->create(['user_id' => $user->id]);
@@ -49,7 +52,8 @@ class GeoFenceTest extends TestCase
         $response->assertStatus(409);
     }
 
-    public function test_user_can_update_geofence(): void
+    #[Test]
+    public function user_can_update_geofence(): void
     {
         $user = User::factory()->create();
         $fence = GeoFence::factory()->create(['user_id' => $user->id]);
@@ -65,7 +69,8 @@ class GeoFenceTest extends TestCase
         $this->assertDatabaseHas('geo_fences', ['id' => $fence->id, 'north_lat' => 30.0000]);
     }
 
-    public function test_user_cannot_update_another_users_geofence(): void
+    #[Test]
+    public function user_cannot_update_another_users_geofence(): void
     {
         $user = User::factory()->create();
         $other = User::factory()->create();
@@ -81,7 +86,8 @@ class GeoFenceTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function test_user_can_delete_geofence(): void
+    #[Test]
+    public function user_can_delete_geofence(): void
     {
         $user = User::factory()->create();
         $fence = GeoFence::factory()->create(['user_id' => $user->id]);
@@ -92,7 +98,8 @@ class GeoFenceTest extends TestCase
         $this->assertDatabaseMissing('geo_fences', ['id' => $fence->id]);
     }
 
-    public function test_user_can_toggle_geofence(): void
+    #[Test]
+    public function user_can_toggle_geofence(): void
     {
         $user = User::factory()->create();
         $fence = GeoFence::factory()->create(['user_id' => $user->id]);
@@ -108,7 +115,8 @@ class GeoFenceTest extends TestCase
         $response->assertJson(['is_active' => false]);
     }
 
-    public function test_check_inside_geofence_triggers_servo(): void
+    #[Test]
+    public function check_inside_geofence_triggers_servo(): void
     {
         $user = User::factory()->create();
         Device::factory()->esp8266()->online()->create(['user_id' => $user->id]);
@@ -134,7 +142,8 @@ class GeoFenceTest extends TestCase
         $this->assertFalse($fence->fresh()->is_active);
     }
 
-    public function test_check_outside_geofence_does_not_trigger(): void
+    #[Test]
+    public function check_outside_geofence_does_not_trigger(): void
     {
         $user = User::factory()->create();
         $fence = GeoFence::factory()->active()->create(['user_id' => $user->id]);
@@ -149,7 +158,8 @@ class GeoFenceTest extends TestCase
         $this->assertTrue($fence->fresh()->is_active);
     }
 
-    public function test_check_inactive_geofence_does_not_trigger(): void
+    #[Test]
+    public function check_inactive_geofence_does_not_trigger(): void
     {
         $user = User::factory()->create();
         $fence = GeoFence::factory()->create(['user_id' => $user->id]);
@@ -163,7 +173,8 @@ class GeoFenceTest extends TestCase
         $response->assertJson(['triggered' => false]);
     }
 
-    public function test_check_returns_distance_from_center(): void
+    #[Test]
+    public function check_returns_distance_from_center(): void
     {
         $user = User::factory()->create();
         $fence = GeoFence::factory()->active()->create(['user_id' => $user->id]);
@@ -177,7 +188,8 @@ class GeoFenceTest extends TestCase
         $response->assertJsonStructure(['triggered', 'distance_meters']);
     }
 
-    public function test_index_returns_user_geofence(): void
+    #[Test]
+    public function index_returns_user_geofence(): void
     {
         $user = User::factory()->create();
         $fence = GeoFence::factory()->create(['user_id' => $user->id]);
@@ -188,13 +200,15 @@ class GeoFenceTest extends TestCase
         $response->assertJsonFragment(['id' => $fence->id]);
     }
 
-    public function test_guest_cannot_access_geofence_endpoints(): void
+    #[Test]
+    public function guest_cannot_access_geofence_endpoints(): void
     {
         $response = $this->getJson('/geo-fences');
         $response->assertUnauthorized();
     }
 
-    public function test_geofence_has_pending_scheduled_trigger_relationship(): void
+    #[Test]
+    public function geofence_has_pending_scheduled_trigger_relationship(): void
     {
         $user = User::factory()->create();
         $fence = GeoFence::factory()->create(['user_id' => $user->id]);
@@ -207,7 +221,8 @@ class GeoFenceTest extends TestCase
         $this->assertEquals($pending->id, $fresh->pendingScheduledTrigger->id);
     }
 
-    public function test_trigger_job_fires_servo_when_pending(): void
+    #[Test]
+    public function trigger_job_fires_servo_when_pending(): void
     {
         $user = User::factory()->create();
         Device::factory()->esp8266()->online()->create(['user_id' => $user->id]);
@@ -227,7 +242,8 @@ class GeoFenceTest extends TestCase
         $this->assertFalse($fence->fresh()->is_active);
     }
 
-    public function test_trigger_job_does_not_fire_when_cancelled(): void
+    #[Test]
+    public function trigger_job_does_not_fire_when_cancelled(): void
     {
         $user = User::factory()->create();
         Device::factory()->esp8266()->online()->create(['user_id' => $user->id]);
@@ -244,7 +260,8 @@ class GeoFenceTest extends TestCase
         $this->assertTrue($fence->fresh()->is_active);
     }
 
-    public function test_estimate_returns_distance_and_minutes(): void
+    #[Test]
+    public function estimate_returns_distance_and_minutes(): void
     {
         $user = User::factory()->create();
         $fence = GeoFence::factory()->create([
@@ -267,7 +284,8 @@ class GeoFenceTest extends TestCase
         $this->assertEquals(35, $response->json('assumed_speed_mph'));
     }
 
-    public function test_estimate_rejects_other_users_geofence(): void
+    #[Test]
+    public function estimate_rejects_other_users_geofence(): void
     {
         $user = User::factory()->create();
         $other = User::factory()->create();
@@ -281,7 +299,8 @@ class GeoFenceTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function test_schedule_trigger_creates_pending_record_and_activates_fence(): void
+    #[Test]
+    public function schedule_trigger_creates_pending_record_and_activates_fence(): void
     {
         Queue::fake();
 
@@ -306,7 +325,8 @@ class GeoFenceTest extends TestCase
         Queue::assertPushed(TriggerScheduledGeofenceJob::class);
     }
 
-    public function test_schedule_trigger_rejects_minutes_over_180(): void
+    #[Test]
+    public function schedule_trigger_rejects_minutes_over_180(): void
     {
         $user = User::factory()->create();
         $fence = GeoFence::factory()->create(['user_id' => $user->id]);
@@ -320,7 +340,8 @@ class GeoFenceTest extends TestCase
         $response->assertStatus(422);
     }
 
-    public function test_schedule_trigger_rejects_zero_minutes(): void
+    #[Test]
+    public function schedule_trigger_rejects_zero_minutes(): void
     {
         $user = User::factory()->create();
         $fence = GeoFence::factory()->create(['user_id' => $user->id]);
@@ -334,7 +355,8 @@ class GeoFenceTest extends TestCase
         $response->assertStatus(422);
     }
 
-    public function test_scheduling_cancels_prior_pending_trigger(): void
+    #[Test]
+    public function scheduling_cancels_prior_pending_trigger(): void
     {
         Queue::fake();
 
@@ -352,7 +374,8 @@ class GeoFenceTest extends TestCase
         $this->assertEquals('cancelled', $prior->fresh()->status);
     }
 
-    public function test_cancel_scheduled_trigger_marks_cancelled_and_deactivates_fence(): void
+    #[Test]
+    public function cancel_scheduled_trigger_marks_cancelled_and_deactivates_fence(): void
     {
         $user = User::factory()->create();
         // Default factory: live_check_armed=false. Pending trigger alone is what
@@ -368,7 +391,8 @@ class GeoFenceTest extends TestCase
         $this->assertFalse($fence->fresh()->is_active);
     }
 
-    public function test_check_does_not_fire_without_toggle_even_with_pending_trigger(): void
+    #[Test]
+    public function check_does_not_fire_without_toggle_even_with_pending_trigger(): void
     {
         // Double-fire prevention: a web user schedules a timer, then the native
         // app's /check fires on a perimeter cross — without /toggle ever being
@@ -408,7 +432,8 @@ class GeoFenceTest extends TestCase
         $this->assertEquals('fired', $trigger->fresh()->status);
     }
 
-    public function test_toggle_arms_live_check_so_check_inside_fires(): void
+    #[Test]
+    public function toggle_arms_live_check_so_check_inside_fires(): void
     {
         // /toggle arms live_check_armed. /check outside must not fire; /check
         // inside must fire and clear live_check_armed (one-shot).
@@ -445,7 +470,8 @@ class GeoFenceTest extends TestCase
         $this->assertFalse($fence->fresh()->live_check_armed);
     }
 
-    public function test_is_active_derives_from_pending_trigger_and_live_check_armed(): void
+    #[Test]
+    public function is_active_derives_from_pending_trigger_and_live_check_armed(): void
     {
         // Direct verification of the accessor: is_active = live_check_armed OR
         // (pendingScheduledTrigger != null). Neither => false; either => true.

@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Broadcasting\Broadcasters\Broadcaster;
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class DeviceChannelAuthTest extends TestCase
@@ -51,7 +52,8 @@ class DeviceChannelAuthTest extends TestCase
         return false;
     }
 
-    public function test_device_owner_can_access_device_channel(): void
+    #[Test]
+    public function device_owner_can_access_device_channel(): void
     {
         $user = User::factory()->create();
         $device = Device::factory()->create(['user_id' => $user->id]);
@@ -61,7 +63,8 @@ class DeviceChannelAuthTest extends TestCase
         $this->assertTrue($result, 'Device owner should be authorized to access the channel.');
     }
 
-    public function test_non_owner_cannot_access_device_channel(): void
+    #[Test]
+    public function non_owner_cannot_access_device_channel(): void
     {
         $owner = User::factory()->create();
         $other = User::factory()->create();
@@ -72,7 +75,8 @@ class DeviceChannelAuthTest extends TestCase
         $this->assertFalse($result, 'Non-owner should be denied access to the device channel.');
     }
 
-    public function test_nonexistent_device_returns_false(): void
+    #[Test]
+    public function nonexistent_device_returns_false(): void
     {
         $user = User::factory()->create();
 

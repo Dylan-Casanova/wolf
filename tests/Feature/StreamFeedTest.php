@@ -9,13 +9,15 @@ use App\Models\Device;
 use App\Models\Stream;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class StreamFeedTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_feed_rejects_invalid_device_token(): void
+    #[Test]
+    public function feed_rejects_invalid_device_token(): void
     {
         $stream = Stream::factory()->create(['status' => 'pending']);
 
@@ -26,7 +28,8 @@ class StreamFeedTest extends TestCase
         $response->assertUnauthorized();
     }
 
-    public function test_feed_rejects_ended_stream(): void
+    #[Test]
+    public function feed_rejects_ended_stream(): void
     {
         $device = Device::factory()->create();
         $token = $device->generateToken();
@@ -43,7 +46,8 @@ class StreamFeedTest extends TestCase
         $response->assertStatus(409);
     }
 
-    public function test_feed_broadcasts_frame_event(): void
+    #[Test]
+    public function feed_broadcasts_frame_event(): void
     {
         Event::fake([StreamFrameReceived::class]);
 
@@ -70,7 +74,8 @@ class StreamFeedTest extends TestCase
         });
     }
 
-    public function test_feed_marks_pending_stream_as_active(): void
+    #[Test]
+    public function feed_marks_pending_stream_as_active(): void
     {
         Event::fake([StreamFrameReceived::class]);
 
@@ -91,7 +96,8 @@ class StreamFeedTest extends TestCase
         $this->assertNotNull($stream->fresh()->started_at);
     }
 
-    public function test_feed_ignores_empty_body(): void
+    #[Test]
+    public function feed_ignores_empty_body(): void
     {
         Event::fake([StreamFrameReceived::class]);
 

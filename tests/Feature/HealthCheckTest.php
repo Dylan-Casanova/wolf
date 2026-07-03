@@ -6,13 +6,15 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Redis;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class HealthCheckTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_health_endpoint_returns_healthy_status(): void
+    #[Test]
+    public function health_endpoint_returns_healthy_status(): void
     {
         Redis::shouldReceive('ping')->once()->andReturn('PONG');
 
@@ -31,7 +33,8 @@ class HealthCheckTest extends TestCase
             ]);
     }
 
-    public function test_health_endpoint_is_accessible_without_auth(): void
+    #[Test]
+    public function health_endpoint_is_accessible_without_auth(): void
     {
         Redis::shouldReceive('ping')->once()->andReturn('PONG');
 

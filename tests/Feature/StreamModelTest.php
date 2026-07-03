@@ -8,13 +8,15 @@ use App\Models\Device;
 use App\Models\Stream;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class StreamModelTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_stream_belongs_to_device_and_user(): void
+    #[Test]
+    public function stream_belongs_to_device_and_user(): void
     {
         $user = User::factory()->create();
         $device = Device::factory()->create(['user_id' => $user->id]);
@@ -29,7 +31,8 @@ class StreamModelTest extends TestCase
         $this->assertEquals($user->id, $stream->user->id);
     }
 
-    public function test_stream_has_correct_statuses(): void
+    #[Test]
+    public function stream_has_correct_statuses(): void
     {
         $stream = Stream::factory()->create(['status' => 'pending']);
         $this->assertEquals('pending', $stream->status);

@@ -12,13 +12,15 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Mockery;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class StreamControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_authenticated_user_can_start_stream(): void
+    #[Test]
+    public function authenticated_user_can_start_stream(): void
     {
         $mock = Mockery::mock(DeviceInterface::class);
         $mock->shouldReceive('startStream')->once()->andReturn(true);
@@ -38,7 +40,8 @@ class StreamControllerTest extends TestCase
         ]);
     }
 
-    public function test_user_without_device_cannot_start_stream(): void
+    #[Test]
+    public function user_without_device_cannot_start_stream(): void
     {
         $user = User::factory()->create();
 
@@ -47,7 +50,8 @@ class StreamControllerTest extends TestCase
         $response->assertStatus(422);
     }
 
-    public function test_user_can_stop_stream(): void
+    #[Test]
+    public function user_can_stop_stream(): void
     {
         $user = User::factory()->create();
         $device = Device::factory()->create(['user_id' => $user->id]);
@@ -70,14 +74,16 @@ class StreamControllerTest extends TestCase
         $this->assertNotNull($stream->fresh()->ended_at);
     }
 
-    public function test_unauthenticated_user_cannot_start_stream(): void
+    #[Test]
+    public function unauthenticated_user_cannot_start_stream(): void
     {
         $response = $this->postJson('/stream/start');
 
         $response->assertUnauthorized();
     }
 
-    public function test_stop_broadcasts_stream_ended_event(): void
+    #[Test]
+    public function stop_broadcasts_stream_ended_event(): void
     {
         Event::fake([StreamEnded::class]);
 

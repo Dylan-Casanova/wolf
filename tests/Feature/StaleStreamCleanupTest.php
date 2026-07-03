@@ -8,13 +8,15 @@ use App\Events\StreamEnded;
 use App\Models\Stream;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class StaleStreamCleanupTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_stale_active_streams_are_ended(): void
+    #[Test]
+    public function stale_active_streams_are_ended(): void
     {
         $stale = Stream::factory()->create([
             'status' => 'active',
@@ -33,7 +35,8 @@ class StaleStreamCleanupTest extends TestCase
         $this->assertEquals('active', $fresh->fresh()->status);
     }
 
-    public function test_stale_pending_streams_are_ended(): void
+    #[Test]
+    public function stale_pending_streams_are_ended(): void
     {
         $stale = Stream::factory()->create([
             'status' => 'pending',
@@ -45,7 +48,8 @@ class StaleStreamCleanupTest extends TestCase
         $this->assertEquals('ended', $stale->fresh()->status);
     }
 
-    public function test_ended_streams_older_than_24_hours_are_purged(): void
+    #[Test]
+    public function ended_streams_older_than_24_hours_are_purged(): void
     {
         $old = Stream::factory()->create([
             'status' => 'ended',
@@ -63,7 +67,8 @@ class StaleStreamCleanupTest extends TestCase
         $this->assertNotNull(Stream::find($recent->id));
     }
 
-    public function test_stale_streams_broadcast_ended_event(): void
+    #[Test]
+    public function stale_streams_broadcast_ended_event(): void
     {
         Event::fake([StreamEnded::class]);
 

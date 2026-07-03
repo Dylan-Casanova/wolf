@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Broadcasting\Broadcasters\Broadcaster;
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class StreamChannelAuthTest extends TestCase
@@ -51,7 +52,8 @@ class StreamChannelAuthTest extends TestCase
         return false;
     }
 
-    public function test_stream_owner_can_access_channel(): void
+    #[Test]
+    public function stream_owner_can_access_channel(): void
     {
         $user = User::factory()->create();
         $stream = Stream::factory()->create(['user_id' => $user->id]);
@@ -61,7 +63,8 @@ class StreamChannelAuthTest extends TestCase
         $this->assertTrue($result, 'Stream owner should be authorized to access the channel.');
     }
 
-    public function test_non_owner_cannot_access_channel(): void
+    #[Test]
+    public function non_owner_cannot_access_channel(): void
     {
         $owner = User::factory()->create();
         $stream = Stream::factory()->create(['user_id' => $owner->id]);
@@ -73,7 +76,8 @@ class StreamChannelAuthTest extends TestCase
         $this->assertFalse($result, 'Non-owner should be denied access to the channel.');
     }
 
-    public function test_unauthenticated_user_cannot_access_channel(): void
+    #[Test]
+    public function unauthenticated_user_cannot_access_channel(): void
     {
         $owner = User::factory()->create();
         $stream = Stream::factory()->create(['user_id' => $owner->id]);
