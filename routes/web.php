@@ -36,11 +36,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware('auth')->group(function () {
     // Streaming
-    Route::post('/stream/start', [StreamController::class, 'start']);
+    Route::post('/stream/start', [StreamController::class, 'start'])
+        ->middleware('throttle:device-capture');
     Route::post('/stream/{stream}/stop', [StreamController::class, 'stop']);
 
     // Garage
-    Route::post('/garage/trigger', [GarageController::class, 'trigger']);
+    Route::post('/garage/trigger', [GarageController::class, 'trigger'])
+        ->middleware('throttle:device-capture');
 
     // Geofence API (session-authenticated)
     Route::apiResource('geo-fences', GeoFenceController::class)

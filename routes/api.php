@@ -30,7 +30,8 @@ Route::prefix('v1')->group(function () {
         Route::post('geo-fences/{geoFence}/toggle', [GeoFenceController::class, 'toggle']);
 
         // Garage trigger
-        Route::post('/garage/trigger', [GarageController::class, 'trigger']);
+        Route::post('/garage/trigger', [GarageController::class, 'trigger'])
+            ->middleware('throttle:device-capture');
 
         // User's devices (mobile-only — the existing /devices web routes are admin-only resource)
         Route::get('/devices', function (Request $request) {

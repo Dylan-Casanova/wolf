@@ -112,4 +112,21 @@ class StreamControllerTest extends TestCase
                 && $channels[0]->name === "private-stream.{$stream->id}";
         });
     }
+
+    #[Test]
+    public function stream_start_is_rate_limited_after_10_per_minute(): void
+    {
+        $user = User::factory()->create();
+        Device::factory()->create(['user_id' => $user->id]);
+
+        $mock = Mockery::mock(DeviceInterface::class);
+        $mock->shouldReceive('startStream')->times(10)->andReturn(true);
+        $this->app->instance(DeviceInterface::class, $mock);
+
+        for ($i = 0; $i < 10; $i++) {
+            $this->actingAs($user)->postJson('/stream/start')->assertOk();
+        }
+
+        $this->actingAs($user)->postJson('/stream/start')->assertStatus(429);
+    }
 }

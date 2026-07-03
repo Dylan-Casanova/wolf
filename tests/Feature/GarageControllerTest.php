@@ -52,4 +52,21 @@ class GarageControllerTest extends TestCase
 
         $response->assertRedirect('/login');
     }
+
+    #[Test]
+    public function garage_trigger_is_rate_limited_after_10_per_minute(): void
+    {
+        $user = User::factory()->create();
+        Device::factory()->create(['user_id' => $user->id]);
+
+        $mock = Mockery::mock(DeviceInterface::class);
+        $mock->shouldReceive('triggerServo')->times(10)->andReturn(true);
+        $this->app->instance(DeviceInterface::class, $mock);
+
+        for ($i = 0; $i < 10; $i++) {
+            $this->actingAs($user)->postJson('/garage/trigger')->assertOk();
+        }
+
+        $this->actingAs($user)->postJson('/garage/trigger')->assertStatus(429);
+    }
 }
