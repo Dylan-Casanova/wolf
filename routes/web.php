@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeviceClaimController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\GarageController;
@@ -17,22 +18,7 @@ Route::get('/', fn () => Inertia::render('Welcome'))->name('home');
 Route::get('/health', HealthController::class)->name('health');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', function () {
-        $user = auth()->user();
-        $devices = $user->devices()->get()->map(fn ($device) => [
-            'id' => $device->id,
-            'name' => $device->name,
-            'device_id' => $device->device_id,
-            'type' => $device->type->value,
-            'is_online' => $device->is_online,
-        ]);
-
-        return Inertia::render('Dashboard', [
-            'devices' => $devices,
-            'geofence' => $user->geofence?->load('pendingScheduledTrigger'),
-            'server_now' => now()->toIso8601String(),
-        ]);
-    })->name('dashboard');
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::get('/geofence', function () {
         $geofence = auth()->user()->geofence?->load('pendingScheduledTrigger');
