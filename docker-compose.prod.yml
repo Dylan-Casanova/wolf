@@ -11,8 +11,12 @@
 #   - Uses production PHP config (no Xdebug, opcache tuned)
 #   - MySQL credentials from .env instead of hardcoded 'secret'
 #
-# Note: MySQL (3306), Redis (6379), Nginx (8000), Reverb (8080) port mappings
-# from the base file are blocked by the server firewall (only 22, 80, 443, 1883 open).
+# Note: In production we drop all `ports:` mappings for internal services
+# (MySQL, Redis, Nginx, Reverb) with `ports: []` — they stay reachable only on
+# the internal `wolf` Docker network. Do NOT rely on the host firewall here:
+# Docker inserts its own iptables rules (DOCKER-USER chain) that run BEFORE ufw,
+# so any `ports: - "X:X"` mapping is exposed to the internet regardless of ufw.
+# The base file now binds Redis/MySQL to 127.0.0.1 as a defense-in-depth default.
 # =============================================================================
 
 services:
