@@ -7,7 +7,8 @@ echo "=== Pulling latest code ==="
 git pull
 
 echo "=== Building and starting containers ==="
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# COMPOSE_FILE in .env selects base + prod override — no -f flags needed.
+docker compose up -d --build
 
 echo "=== Building frontend assets ==="
 # Read VITE_* vars from .env
