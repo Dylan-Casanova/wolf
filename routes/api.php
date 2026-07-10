@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\DeviceStatusController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\DeviceClaimController as ApiDeviceClaimController;
 use App\Http\Controllers\Api\V1\DeviceController as ApiDeviceController;
+use App\Http\Controllers\Api\V1\EmailVerificationController;
 use App\Http\Controllers\GarageController;
 use App\Http\Controllers\GeoFenceController;
 use App\Http\Controllers\StreamFeedController;
@@ -22,6 +23,9 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/auth/user', [AuthController::class, 'user']);
+        Route::post('/auth/email/verification-notification', [EmailVerificationController::class, 'send'])
+            ->middleware('throttle:6,1')
+            ->name('api.verification.send');
 
         // Geofence (reuses the same controllers used by the web — both return JSON)
         Route::apiResource('geo-fences', GeoFenceController::class)
